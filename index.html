@@ -1,0 +1,850 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>بستاني</title>
+<meta name="description" content="برنامج زراعي أسبوعي لنخيل ومانجو وتين وتوت في الإمارات">
+<meta name="theme-color" content="#0C4650">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="بستاني">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Lalezar&display=swap" rel="stylesheet">
+<style>
+/* Layout: oasis-at-dusk hero, big tappable watering tiles, weekly day columns, floating bottom bar. Weekly rhythm only with sun and palm, four screens switched from a bottom bar (my trees, feeding and spraying, what to plant, ask by photo). Weekly rhythm only. */
+:root{
+  --bg:#EDF5F0; --surface:#FFFFFF; --surface2:#E5F0E9; --ink:#10261E; --muted:#587066; --line:#D3E3D9;
+  --hero1:#0C4650; --hero2:#16706F; --hero-ink:#FFFFFF; --hero-mute:#D3E9E6; --sun:#F6CB4F;
+  --water:#0B6F96; --water-bg:#D6EBF4;
+  --leaf:#14724B; --leaf-bg:#D8F0E1;
+  --soil:#8A5A10; --soil-bg:#F7E9C8;
+  --spray:#6A4FB0; --spray-bg:#E8E2F7;
+  --risk:#B3382C; --risk-bg:#FADFDB;
+  --shadow:0 8px 22px rgba(10,60,45,.09);
+  --focus:#0B6F96;
+  --c-palm:#1F8A55; --c-mango:#E0841A; --c-fig:#8B4FB0; --c-mulberry:#C23A5C;
+  --f:"Cairo",system-ui,"Segoe UI",Tahoma,sans-serif;
+  --fd:"Lalezar","Cairo",system-ui,sans-serif;
+  --gl:max(16px,env(safe-area-inset-left,0px));
+  --gr:max(16px,env(safe-area-inset-right,0px));
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0B1411; --surface:#13201A; --surface2:#1A2B23; --ink:#E6F2EA; --muted:#93AA9E; --line:#25382E;
+    --hero1:#082F38; --hero2:#10575C;
+    --water:#6CC3E6; --water-bg:#12303C;
+    --leaf:#7FD6A1; --leaf-bg:#173325;
+    --soil:#E7BE6A; --soil-bg:#35290F;
+    --spray:#B9A4EC; --spray-bg:#2A2342;
+    --risk:#F2908A; --risk-bg:#3B1E1B;
+    --shadow:none; --focus:#6CC3E6;
+    --c-palm:#5FCB8A; --c-mango:#F2A653; --c-fig:#BE90DB; --c-mulberry:#E8758F;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0B1411; --surface:#13201A; --surface2:#1A2B23; --ink:#E6F2EA; --muted:#93AA9E; --line:#25382E;
+  --hero1:#082F38; --hero2:#10575C;
+  --water:#6CC3E6; --water-bg:#12303C;
+  --leaf:#7FD6A1; --leaf-bg:#173325;
+  --soil:#E7BE6A; --soil-bg:#35290F;
+  --spray:#B9A4EC; --spray-bg:#2A2342;
+  --risk:#F2908A; --risk-bg:#3B1E1B;
+  --shadow:none; --focus:#6CC3E6;
+  --c-palm:#5FCB8A; --c-mango:#F2A653; --c-fig:#BE90DB; --c-mulberry:#E8758F;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{margin:0; color:var(--ink); background:var(--bg); font-family:var(--f); font-size:15px; line-height:1.7; direction:rtl;
+  padding-block:0 120px; padding-left:var(--gl); padding-right:var(--gr)}
+button,input,textarea{font:inherit; color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--focus); outline-offset:2px}
+h1,h2,h3,p{margin:0}
+.wrap{max-width:720px; margin:0 auto}
+
+.hero{position:relative; overflow:hidden; color:var(--hero-ink);
+  background:radial-gradient(circle at 16% 46%,rgba(246,190,80,.34),transparent 55%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cpath d='M28 5l5.5 10.5L45 12.5l-3 11.5 11 4-11 4 3 11.5-11.500-3L28 51l-5.500-10.500L11 43.500l3-11.500L3 28l11-4-3-11.500 11.500 3z' fill='none' stroke='%23ffffff' stroke-opacity='.07' stroke-width='1'/%3E%3C/svg%3E"),
+    linear-gradient(165deg,var(--hero1),var(--hero2));
+  margin-left:calc(-1*var(--gl)); margin-right:calc(-1*var(--gr)); padding:24px var(--gr) 26px var(--gl); border-radius:0 0 36px 36px; min-height:196px}
+.hero .scene{position:absolute; left:0; bottom:0; height:100%; width:46%; pointer-events:none}
+.hc{position:relative; max-width:720px; margin:0 auto; display:flex; flex-direction:column; align-items:flex-start; gap:4px}
+.hc>*{max-width:54%}
+.hn{font-family:var(--fd); font-size:50px; font-weight:400; line-height:1.05}
+.hd{font-size:14.5px; font-weight:600; line-height:1.5}
+.hrow{display:flex; flex-wrap:wrap; gap:6px; margin-top:6px}
+.hchip{background:rgba(255,255,255,.15); padding:1px 11px; border-radius:99px; font-size:12.5px; font-weight:600; color:var(--hero-ink)}
+.ph{margin:2px 4px 0}
+.ph h2{font-family:var(--fd); font-weight:400; font-size:30px; line-height:1.2}
+.ph p{color:var(--muted); font-size:13.5px}
+
+main{display:flex; flex-direction:column; gap:14px; padding-top:18px}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:24px; padding:16px 16px 14px; min-width:0; box-shadow:var(--shadow)}
+.card h3{font-size:17px; font-weight:700; display:flex; align-items:center; gap:10px; margin-bottom:6px; text-wrap:balance}
+.card .sub{font-size:13px; color:var(--muted); margin:0 0 8px}
+.ic{display:inline-grid; place-items:center; width:32px; height:32px; border-radius:11px; flex:none}
+.ic svg{width:19px; height:19px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
+.k-water .ic{background:var(--water-bg); color:var(--water)}
+.k-plant .ic{background:var(--leaf-bg); color:var(--leaf)}
+.k-fert .ic{background:var(--soil-bg); color:var(--soil)}
+.k-spray .ic{background:var(--spray-bg); color:var(--spray)}
+.k-risk .ic{background:var(--risk-bg); color:var(--risk)}
+.k-task .ic{background:var(--surface2); color:var(--muted)}
+.k-cam .ic{background:var(--leaf-bg); color:var(--leaf)}
+
+.recs{background:var(--leaf-bg); border-color:transparent}
+.recs ul{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:9px}
+.recs li{display:flex; gap:10px; align-items:flex-start}
+.recs li i{flex:none; margin-top:4px; width:22px; height:22px; border-radius:8px; display:grid; place-items:center; background:var(--surface)}
+.recs li i svg{width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
+.recs li.water i{color:var(--water)} .recs li.fert i{color:var(--soil)} .recs li.plant i{color:var(--leaf)} .recs li.risk i{color:var(--risk)}
+
+.row{display:flex; align-items:center; gap:10px; padding:8px 0}
+.row .nm{flex:1; min-width:0}
+.row .nm b{display:flex; align-items:center; gap:8px; font-weight:700; font-size:16px}
+.row .nm small{display:block; color:var(--muted); font-size:12.5px; line-height:1.6}
+.dot{display:inline-block; width:11px; height:11px; border-radius:50%; flex:none}
+.pill{font-size:12.5px; font-weight:700; padding:2px 11px; border-radius:99px; white-space:nowrap}
+.pill.due{background:var(--water); color:var(--surface)}
+.pill.rest{background:var(--surface2); color:var(--muted)}
+.pill.done{background:var(--leaf-bg); color:var(--leaf)}
+.btn{border:1px solid var(--line); background:var(--surface2); border-radius:12px; padding:6px 13px; font-size:13.5px; font-weight:600; display:inline-flex; align-items:center; gap:7px; text-decoration:none}
+.btn svg{width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
+.btn.main{background:var(--hero2); border-color:transparent; color:#fff}
+.btn.on{background:var(--leaf-bg); color:var(--leaf); border-color:transparent}
+.btn.ghost{background:transparent; color:var(--muted)}
+.col{display:flex; flex-direction:column; align-items:flex-end; gap:6px}
+.tag{font-size:11px; font-weight:600; padding:0 8px; border-radius:99px; border:1px solid var(--line); color:var(--muted); white-space:nowrap}
+.tag.loc{color:var(--leaf); border-color:var(--leaf)}
+.meta{display:flex; gap:8px; align-items:center; flex-wrap:wrap; padding:2px 0 6px}
+.edit{background:var(--surface2); border-radius:14px; padding:10px 12px; margin:0 0 6px; display:flex; flex-direction:column; gap:8px}
+.stp{display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:13.5px}
+.stp .ctl{display:flex; align-items:center; gap:8px}
+.stp .ctl button{width:32px; height:32px; border-radius:10px; border:1px solid var(--line); background:var(--surface); font-size:18px; line-height:1}
+.stp .ctl output{min-width:24px; text-align:center; font-weight:700; font-variant-numeric:tabular-nums}
+
+
+.today .th{display:flex; justify-content:space-between; align-items:baseline; margin:0 4px 8px}
+.today .th h3{font-family:var(--fd); font-size:24px; font-weight:400}
+.today .th span{font-size:13px; color:var(--muted)}
+.tiles{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.tile{--tc:var(--c-palm); text-align:start; border:2px solid transparent; border-radius:26px; padding:14px 14px 12px; display:flex; flex-direction:column; gap:1px; min-height:136px; color:var(--ink);
+  background:color-mix(in srgb,var(--tc) 10%,var(--surface))}
+.tile .tb{width:42px; height:42px; border-radius:15px; display:grid; place-items:center; background:color-mix(in srgb,var(--tc) 24%,var(--surface)); color:var(--tc); margin-bottom:6px}
+.tile .tb svg{width:22px; height:22px; fill:currentColor; stroke:none}
+.tile.done .tb svg{fill:none; stroke:currentColor; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round}
+.tile b{font-size:19px; font-weight:800; line-height:1.3}
+.tile .tl{font-size:13.5px; font-weight:700}
+.tile small{font-size:12px; color:var(--muted); line-height:1.5}
+.tile.due{border-color:var(--tc); background:color-mix(in srgb,var(--tc) 20%,var(--surface))}
+.tile.due .tb{background:var(--tc); color:var(--surface)}
+.tile.rest{opacity:.88}
+.wk{display:grid; grid-template-columns:repeat(7,1fr); gap:5px}
+.dcol{background:var(--surface2); border-radius:20px; padding:9px 0 10px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:5px; min-width:0}
+.dcol .dn{font-size:11.5px; color:var(--muted); line-height:1.2}
+.dcol .dd{font-size:15px; font-variant-numeric:tabular-nums; margin-bottom:2px}
+.dcol.today{background:var(--hero2); color:#fff}
+.dcol.today .dn{color:rgba(255,255,255,.82)}
+.dr{--tc:var(--muted); width:22px; height:22px; display:grid; place-items:center; color:var(--tc); border-radius:50%}
+.dr svg{width:15px; height:15px; fill:currentColor; stroke:none}
+.dr.ck svg{fill:none; stroke:currentColor; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round}
+.dr.off::after{content:""; width:5px; height:5px; border-radius:50%; background:var(--muted); opacity:.3}
+.dcol.today .dr:not(.off){background:#fff}
+.dcol.today .dr.off::after{background:#fff; opacity:.4}
+
+.chips{display:flex; flex-wrap:wrap; gap:7px}
+.chip{background:var(--leaf-bg); color:var(--leaf); border-radius:99px; padding:3px 13px; font-size:14px; font-weight:600}
+.chip em{font-style:normal; font-size:11.5px; color:var(--soil); margin-inline-start:6px; font-weight:600}
+.gt{font-size:13px; font-weight:700; color:var(--muted); margin:10px 0 6px}
+.gt:first-of-type{margin-top:2px}
+.note{font-size:13.5px; color:var(--muted); margin-top:8px}
+
+.sel{display:grid; grid-template-columns:repeat(4,1fr); gap:6px}
+.sel button{border:1px solid var(--line); background:var(--surface); border-radius:14px; padding:7px 2px; font-weight:700; font-size:13.5px; display:flex; flex-direction:column; align-items:center; gap:2px}
+.sel button[aria-pressed="true"]{background:var(--ink); color:var(--bg); border-color:transparent}
+.sub-seg{display:grid; grid-template-columns:repeat(3,1fr); gap:5px; background:var(--surface2); padding:4px; border-radius:16px}
+.sub-seg button{border:0; background:transparent; padding:7px 2px; border-radius:12px; font-weight:700; font-size:14px; color:var(--muted)}
+.sub-seg button[aria-pressed="true"]{background:var(--surface); color:var(--ink); box-shadow:var(--shadow)}
+
+.grp{padding:10px 0; border-top:1px solid var(--line)}
+.grp:first-of-type{border-top:0; padding-top:2px}
+.pn{display:flex; align-items:center; gap:8px; font-weight:700; margin-bottom:4px}
+.it{display:flex; flex-direction:column; gap:3px; padding:5px 0}
+.it p{font-size:14.5px}
+.it .ty{display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-weight:700; font-size:14.5px}
+.k-spray .ty b{color:var(--spray)} .k-risk .ty b{color:var(--risk)}
+.empty{color:var(--muted); font-size:14px}
+
+.strip{display:grid; grid-template-columns:64px repeat(7,1fr); gap:4px; align-items:center; text-align:center}
+.strip .h{font-size:11.5px; color:var(--muted); line-height:1.3; padding-bottom:3px}
+.strip .h b{display:block; font-size:14px; color:var(--ink); font-variant-numeric:tabular-nums}
+.strip .h.today b{color:var(--surface); background:var(--hero2); border-radius:99px; width:26px; height:26px; line-height:26px; margin:0 auto}
+.strip .lb{font-size:13px; font-weight:700; text-align:start; display:flex; align-items:center; gap:5px}
+.cell{height:36px; display:grid; place-items:center; border-radius:11px; background:var(--surface2)}
+.cell svg{width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
+.cell.due{background:var(--water-bg); color:var(--water)}
+.cell.due svg{fill:currentColor}
+.cell.done{background:var(--leaf-bg); color:var(--leaf)}
+.cell .no{width:5px; height:5px; border-radius:50%; background:var(--line)}
+.leg{display:flex; flex-wrap:wrap; gap:12px; font-size:12.5px; color:var(--muted); margin-top:8px}
+.leg span{display:inline-flex; align-items:center; gap:5px}
+
+.tbl{width:100%; border-collapse:collapse; font-size:13.5px; font-variant-numeric:tabular-nums}
+.tbl th,.tbl td{padding:6px 4px; text-align:start; border-top:1px solid var(--line)}
+.tbl th{font-weight:600; color:var(--muted)}
+.scroll{overflow-x:auto}
+
+.pick{display:flex; gap:8px; flex-wrap:wrap; margin:6px 0}
+.pick input[type=file]{position:absolute; width:1px; height:1px; opacity:0; pointer-events:none}
+.pick label.btn{cursor:pointer}
+textarea.q{width:100%; border:1px solid var(--line); background:var(--surface2); border-radius:14px; padding:8px 12px; resize:none; min-height:44px; font-size:14px}
+.prev{display:block; width:100%; max-height:300px; object-fit:cover; border-radius:16px; margin:8px 0}
+.badge{display:inline-block; font-weight:700; padding:2px 12px; border-radius:99px; font-size:13.5px}
+.badge.ok{background:var(--leaf-bg); color:var(--leaf)}
+.badge.warn{background:var(--soil-bg); color:var(--soil)}
+.badge.bad{background:var(--risk-bg); color:var(--risk)}
+.badge.na{background:var(--surface2); color:var(--muted)}
+.res h4{margin:12px 0 4px; font-size:14px; color:var(--muted); font-weight:700}
+.res ul{margin:0; padding-inline-start:20px}
+.res li{margin:2px 0; font-size:14.5px}
+.sci{font-size:13px; color:var(--muted); font-style:italic; direction:ltr; display:inline-block}
+.spin{display:inline-block; width:16px; height:16px; border-radius:50%; border:2.5px solid var(--line); border-top-color:var(--hero2); animation:sp 0.9s linear infinite; vertical-align:-3px; margin-inline-end:8px}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+footer{margin-top:20px; font-size:12.5px; color:var(--muted)}
+footer h4{margin:0 0 6px; font-size:15px; color:var(--ink)}
+footer ul{margin:0 0 10px; padding-inline-start:18px}
+footer a{color:var(--water)}
+footer p{margin-bottom:8px}
+
+.bar{position:fixed; left:var(--gl); right:var(--gr); bottom:calc(10px + env(safe-area-inset-bottom,0px)); z-index:30; background:var(--surface);
+  border-radius:28px; padding:6px; box-shadow:0 10px 30px rgba(8,47,56,.22); border:1px solid var(--line); max-width:720px; margin:0 auto}
+.bar-in{display:grid; grid-template-columns:repeat(4,1fr); gap:4px}
+.bar button{border:0; background:transparent; border-radius:22px; padding:7px 2px 5px; display:flex; flex-direction:column; align-items:center; gap:1px; color:var(--muted); font-size:11.5px; font-weight:700; min-width:0}
+.bar button svg{width:23px; height:23px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
+.bar button[aria-selected="true"]{color:#fff; background:var(--hero2)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important}}
+@media (max-width:380px){.strip{grid-template-columns:54px repeat(7,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app" dir="rtl" lang="ar">
+  <header class="hero">
+    <svg class="scene" viewBox="0 0 180 200" preserveAspectRatio="xMinYMax meet" aria-hidden="true">
+      <defs><radialGradient id="sg" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FFE9A3"/><stop offset="1" stop-color="#F2A93E"/></radialGradient></defs>
+      <circle cx="62" cy="70" r="52" fill="#FFD27A" opacity=".16"/>
+      <circle cx="62" cy="70" r="32" fill="url(#sg)"/>
+      <path d="M0 150 Q55 118 115 142 T180 130 V200 H0Z" fill="#F2C879" opacity=".30"/>
+      <path d="M0 168 Q60 140 120 162 T180 152 V200 H0Z" fill="#E9AE5A" opacity=".42"/>
+      <path d="M0 186 Q70 166 130 182 T180 176 V200 H0Z" fill="#06262D" opacity=".55"/>
+      <g stroke="#06262D" stroke-linecap="round" fill="none">
+        <path d="M128 192 C130 160 126 132 136 96" stroke-width="6"/>
+        <path d="M136 96 Q114 78 88 92" stroke-width="4.5"/>
+        <path d="M136 96 Q118 68 94 62" stroke-width="4.5"/>
+        <path d="M136 96 Q138 66 126 46" stroke-width="4.5"/>
+        <path d="M136 96 Q154 68 174 64" stroke-width="4.5"/>
+        <path d="M136 96 Q160 80 178 96" stroke-width="4.5"/>
+        <path d="M136 96 Q150 96 164 112" stroke-width="4"/>
+      </g>
+    </svg>
+    <div class="hc">
+      <div class="hn">بستاني</div>
+      <div class="hd" id="dateLine"></div>
+      <div class="hrow"><span class="hchip" id="weekLine"></span><span class="hchip" id="clock"></span></div>
+    </div>
+  </header>
+  <main id="view"></main>
+  <footer id="foot"></footer>
+</div>
+<nav class="bar" aria-label="التنقل">
+  <div class="bar-in" role="tablist">
+    <button role="tab" data-act="tab" data-t="farm" id="b-farm"></button>
+    <button role="tab" data-act="tab" data-t="care" id="b-care"></button>
+    <button role="tab" data-act="tab" data-t="plant" id="b-plant"></button>
+    <button role="tab" data-act="tab" data-t="info" id="b-info"></button>
+  </div>
+</nav>
+
+<script>
+(function(){
+'use strict';
+var TZ='Asia/Dubai', DAY=86400000;
+function pad(n){return String(n).padStart(2,'0');}
+function parse(s){var a=s.split('-').map(Number);return Date.UTC(a[0],a[1]-1,a[2]);}
+function fmt(ms){var d=new Date(ms);return d.getUTCFullYear()+'-'+pad(d.getUTCMonth()+1)+'-'+pad(d.getUTCDate());}
+function monthOf(ms){return new Date(ms).getUTCMonth()+1;}
+function todayMs(){return parse(new Intl.DateTimeFormat('en-CA',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()));}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+var L='ar-AE-u-nu-latn';
+var F_DATE=new Intl.DateTimeFormat(L,{timeZone:'UTC',weekday:'long',day:'numeric',month:'long',year:'numeric'});
+var F_SHORT=new Intl.DateTimeFormat(L,{timeZone:'UTC',weekday:'long',day:'numeric',month:'long'});
+var F_DM=new Intl.DateTimeFormat(L,{timeZone:'UTC',day:'numeric',month:'long'});
+var F_WD=new Intl.DateTimeFormat(L,{timeZone:'UTC',weekday:'short'});
+var F_TIME=new Intl.DateTimeFormat(L,{timeZone:TZ,hour:'2-digit',minute:'2-digit',hour12:false});
+var F_HIJRI=null; try{F_HIJRI=new Intl.DateTimeFormat('ar-AE-u-ca-islamic-umalqura-nu-latn',{timeZone:'UTC',day:'numeric',month:'long',year:'numeric'});}catch(e){}
+function daysAr(n){return n===1?'يوم واحد':n===2?'يومان':(n>=3&&n<=10)?n+' أيام':n+' يوماً';}
+
+var store={get:function(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}},
+           set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
+var TODAY=todayMs();
+var state={tab:'farm',sel:'palm',sub:'fert',log:store.get('bm_log',{}),cfg:store.get('bm_cfg',{}),age:store.get('bm_age',10),open:{}};
+
+/* ---------- data ---------- */
+var DROP='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c3.5 4.2 6 7.2 6 10.2a6 6 0 0 1-12 0C6 10.2 8.5 7.2 12 3z"/></svg>';
+var PL=['palm','mango','fig','mulberry'];
+var PN={palm:'النخيل',mango:'المانجو',fig:'التين',mulberry:'التوت'};
+var ALL=[1,2,3,4,5,6,7,8,9,10,11,12], COOL=[10,11,12,1,2,3];
+var DEF={palm:{sum:4,win:6},mango:{sum:3,win:7},fig:{sum:3,win:8},mulberry:{sum:4,win:8}};
+function cfgOf(p){var o={sum:DEF[p].sum,win:DEF[p].win},c=state.cfg[p]||{};if(c.sum)o.sum=c.sum;if(c.win)o.win=c.win;return o;}
+function isSummer(m){return m>=4&&m<=10;}
+function iv(p,m){var c=cfgOf(p);return isSummer(m)?c.sum:c.win;}
+function ivRange(p,m){
+  var c=state.cfg[p]||{};
+  if(p==='palm'){ if(isSummer(m)&&!c.sum) return [3,5]; if(!isSummer(m)&&!c.win) return [6,7]; }
+  var n=iv(p,m); return [n,n];
+}
+function ivText(p,m){var r=ivRange(p,m); return r[0]===r[1]?('كل '+daysAr(r[0])):('كل '+r[0]+'–'+r[1]+' أيام');}
+function restText(p,m){var r=ivRange(p,m); if(r[0]===1&&r[1]===1) return 'سقي يومي';
+  return r[0]===r[1]?('يوم ماء ثم '+daysAr(r[0]-1)+' بدون'):('يوم ماء ثم '+(r[0]-1)+'–'+(r[1]-1)+' أيام بدون');}
+
+var CROPS=[
+ {n:'الخس',g:'ورقيات',m:[10,11]},{n:'السبانخ',g:'ورقيات',m:COOL},{n:'الكيل',g:'ورقيات',m:COOL},{n:'السلق',g:'ورقيات',m:COOL},
+ {n:'الملفوف',g:'كرنبيات',m:COOL},{n:'البروكلي',g:'كرنبيات',m:[10,11]},{n:'القرنبيط',g:'كرنبيات',m:[10,11]},{n:'كرنب بروكسل',g:'كرنبيات',m:[10,11]},
+ {n:'الجزر',g:'جذرية',m:[10,11,2],last:[2]},{n:'الشمندر',g:'جذرية',m:[10,11,2],last:[2]},{n:'الفجل',g:'جذرية',m:[10,11]},
+ {n:'اللفت',g:'جذرية',m:[10,11,12,2],last:[2]},{n:'الكولراب',g:'جذرية',m:[2],last:[2]},
+ {n:'الريحان',g:'أعشاب',m:COOL},{n:'البقدونس',g:'أعشاب',m:COOL},{n:'الكزبرة',g:'أعشاب',m:COOL},{n:'النعناع',g:'أعشاب',m:COOL},{n:'الثوم المعمر (الشيف)',g:'أعشاب',m:COOL},
+ {n:'الفراولة في أحواض',g:'فواكه وأخرى',m:[10,11]},
+ {n:'الباميا',g:'فواكه وأخرى',m:[5,6]},
+ {n:'أشجار النيم والغاف والمورينغا',g:'فواكه وأخرى',m:[2],last:[2]},
+ {n:'فسائل النخيل',g:'فواكه وأخرى',m:[3,4,5,8,9,10],pref:[8,9,10]}
+];
+var GROUPS=['ورقيات','كرنبيات','جذرية','أعشاب','فواكه وأخرى'];
+var PNOTE={
+ 1:['الأجواء ما زالت مناسبة للخضار الورقية والأعشاب.',0],
+ 2:['فبراير آخر شهر مريح لزراعة محاصيل الموسم البارد. ما يحتاج 60 يوماً فأكثر ازرعه الآن أو أجّله للخريف.',1],
+ 3:['آخر شهر في نافذة الموسم البارد للأوراق والأعشاب.',1],
+ 4:['انتهى موسم الخضار الباردة تقريباً، ابدأ بتظليل الأحواض.',0],
+ 5:['الباميا تتحمل حر الصيف في الإمارات (مايو–يونيو).',1],
+ 6:['يونيو: لا زراعة في الهواء الطلق. خطط واطلب بذور الخريف.',1],
+ 7:['حر شديد: أجّل الخضار إلى الخريف.',0],
+ 8:['حر شديد: أجّل الخضار إلى الخريف. فسائل النخيل تبدأ من أغسطس.',0],
+ 9:['حضّر التربة والسماد والبذور لزراعة أكتوبر.',0],
+ 10:['بداية الموسم البارد: أفضل وقت لمعظم الخضار والأعشاب.',1],
+ 11:['الموسم البارد في أوجه، وآخر وقت للفراولة والجزر والخس هذا الشهر.',1],
+ 12:['الأوراق والأعشاب مستمرة، واللفت حتى نهاية الشهر.',1]
+};
+var FERT={
+ palm:[
+  {m:[10,11,12],h:'ابدأ التسميد العضوي للنخيل (من نهاية أكتوبر حتى ديسمبر)',t:'سماد عضوي متحلل: 5 كجم على الأقل لكل سنة من عمر النخلة، وبحد أقصى 50 كجم للنخلة فوق 10 سنوات. انثره في الحوض بعيداً عن الجذع واخلطه بالتربة السطحية. لا تستخدم سماداً عضوياً غير معالج.',s:1},
+  {m:[10,11,12],t:'سماد مركّب بعناصر صغرى مع العضوي: 150 جم لكل سنة من عمر الفسيلة (تحت 10 سنوات)، و1.5 كجم للنخلة فوق 10 سنوات. لا تخلط نترات الأمونيوم أو كبريتات الأمونيوم مع السماد العضوي.',s:1},
+  {m:[1],h:'سماد اليوريا للنخيل في يناير',t:'يوريا لدعم الطلع الأنثوي: 100 جم لكل سنة من العمر، أو 1 كجم للنخلة فوق 10 سنوات. اخلطها بالسماد العضوي قبل النثر مباشرة فقط.',s:1}
+ ],
+ mango:[
+  {m:[8,9],t:'بعد الحصاد: سماد متوازن مع سماد عضوي، ثم قلّل مع دخول الشتاء.',s:0},
+  {m:[11,12],t:'قبل الإزهار: سماد غني بالبوتاسيوم، وتجنّب النيتروجين العالي وقت الإزهار.',s:0}
+ ],
+ fig:[{m:[2,3],t:'سماد عضوي في أواخر الشتاء ثم سماد متوازن خفيف. زيادة النيتروجين تزيد الأوراق وتقلل الثمار.',s:1}],
+ mulberry:[{m:[2,3],t:'تحتاج تسميداً قليلاً: سماد عضوي ودفعة متوازنة خفيفة سنوياً تكفي.',s:0}]
+};
+var TONIC={
+ palm:[
+  {m:ALL,t:'غطاء عضوي (مالش) على الحوض يقلل استهلاك الماء ويحسّن التربة الرملية.',s:1},
+  {m:[10,11,12],t:'محسّنات التربة: خلط السماد العضوي المتحلل بالتربة السطحية يرفع قدرتها على الاحتفاظ بالماء. جرّب مركز ICBA محسنات التربة ضمن تقنيات توفير الماء.',s:1}
+ ],
+ mango:[
+  {m:[11,12],t:'قبل الإزهار: رشة ورقية بالبورون والزنك تدعم العقد. ممارسة شائعة، جرّبها على جزء من الشجرة أولاً.',s:0},
+  {m:[6,7,8,9],t:'بعد الحصاد: مستخلص طحالب أو أحماض أمينية يساعد الشجرة على التعافي.',s:0},
+  {m:ALL,t:'اصفرار الأوراق الحديثة مع بقاء العروق خضراء علامة نقص حديد شائعة في التربة القلوية، وتُعالج بحديد مخلّب (Chelate).',s:0}
+ ],
+ fig:[
+  {m:[3,4],t:'مع بداية النمو: أحماض أمينية أو مستخلص طحالب لدعم الأوراق الجديدة.',s:0},
+  {m:[7,8,9],t:'في الحر الشديد: مستخلص طحالب مع المالش يخففان إجهاد الحرارة.',s:0},
+  {m:ALL,t:'اصفرار الأوراق مع بقاء العروق خضراء: حديد مخلّب.',s:0}
+ ],
+ mulberry:[
+  {m:[3,4,5],t:'أحماض أمينية أو مستخلص طحالب مع بداية الإثمار تدعم النمو.',s:0},
+  {m:[7,8,9],t:'مالش ومستخلص طحالب في الحر الشديد.',s:0},
+  {m:ALL,t:'اصفرار الأوراق مع بقاء العروق خضراء: حديد مخلّب.',s:0}
+ ]
+};
+var SPRAY={
+ palm:[
+  {m:ALL,ty:'مصائد',t:'اجعل مصائد الفيرمون للسوسة الحمراء (والمصائد الضوئية للحفارات) تعمل طوال السنة وافحصها بانتظام. هذا أساس برنامج الإدارة المتكاملة في أبوظبي.',s:1},
+  {m:[12,1,2],ty:'ختم الجروح',t:'بعد التقليم أو إزالة الفسائل: عقّم الأدوات بين نخلة وأخرى، واختم الجرح فوراً بمطهّر فطري مناسب حتى لا تنجذب السوسة.',s:1},
+  {m:[4,5,6,7],ty:'كبريت مطحون',t:'عند ظهور غبار أبيض ونسيج رقيق على الثمار والسعف (عنكبوت الغبار): تعفير أو رش بالكبريت المطحون، وهو من المعالجات المعتمدة في برنامج هيئة أبوظبي. التوقيت تقريبي، وطبّقه قبل التكميم.',s:0},
+  {m:ALL,ty:'إبلاغ',t:'عند رؤية ثقوب بالجذع أو إفراز بني أو ذبول وسط النخلة: أبلغ هيئة أبوظبي للزراعة والسلامة الغذائية. الإبلاغ مطلوب من المزارعين، ومعالجة الإصابة داخل النخلة تحتاج حقناً متخصصاً.',s:1}
+ ],
+ mango:[
+  {m:[12,1,2],ty:'فطري وقائي',t:'قبل الإزهار: رش وقائي بالكبريت القابل للبلل أو بمركّب نحاسي كل 7–10 أيام حتى قبل تفتح الأزهار، ثم أوقفه أثناء الإزهار ولا ترش فوق 32°م.',s:0},
+  {m:[2,3],ty:'حشري',t:'نطاط المانجو: رشتان، الأولى عند ظهور النورات والثانية بعد نحو 15 يوماً، بزيت النيم أو مبيد حشري مسجّل. لا ترش وقت تفتح الأزهار حفاظاً على النحل.',s:0},
+  {m:[3,4,5],ty:'فطري',t:'الأنثراكنوز وتعفن الثمار: مركّب نحاسي أو فطري مسجّل كل نحو 15 يوماً مع الرطوبة. أوقف كل الرش قبل الحصاد بـ15 يوماً.',s:0},
+  {m:[9,10,11],ty:'زيت',t:'القشريات والبق الدقيقي بعد الحصاد: رش زيت البستنة أو النيم عند ظهورها.',s:0}
+ ],
+ fig:[
+  {m:[3,4,5,6,7,8,9,10],ty:'حشري',t:'للقشريات والعنكبوت والبق الدقيقي: صابون حشري أو زيت النيم أو البستنة عند أول ظهور. الإصابات قليلة في المناخ الجاف فلا ترش وقاية بلا داعٍ.',s:0},
+  {m:[8,9,10,11],ty:'فطري',t:'للصدأ وتبقّع الأوراق عند ارتفاع الرطوبة: كبريت أو نحاس مع إزالة الأوراق المصابة.',s:0}
+ ],
+ mulberry:[
+  {m:[3,4,5,6,7,8,9,10],ty:'حشري',t:'للمن والعنكبوت والذبابة البيضاء والقشريات: صابون حشري أو زيت النيم عند ظهورها، وركّز على أسفل الورقة.',s:0},
+  {m:[11,12,1,2,3],ty:'فطري',t:'للبياض الدقيقي: رش كبريتي عند ظهور المسحوق الأبيض مع تحسين التهوية بالتقليم.',s:0}
+ ]
+};
+var DIS={
+ palm:[
+  {m:ALL,n:'سوسة النخيل الحمراء',d:'ثقوب في الجذع وإفراز بني برائحة تخمّر وذبول السعف الوسطي. من أخطر آفات النخيل، والإفراط في الري والجروح المفتوحة تجذبها.',s:1,hot:1},
+  {m:[3,4,5],n:'العثة الصغرى (الحميرة)',d:'تغزو الثمار بعد العقد وتُسقطها. التغطية بالأكياس بعد التلقيح تقلل الإصابة.',s:1},
+  {m:[4,5,6,7,8],n:'عنكبوت الغبار',d:'نسيج رقيق وغبار على الثمار والسعف وتشقق في جلد الثمرة.',s:0},
+  {m:[5,6,7,8,9],n:'حفار العذوق والساق',d:'ثقوب ونشارة عند قواعد العذوق أو الجذع. نقص الماء يفضّله.',s:1},
+  {m:[3,4,5,9,10,11],n:'دوباس النخيل',d:'إفراز عسلي لزج وفطر أسود على السعف.',s:0},
+  {m:ALL,n:'اللفحة السوداء وتعفّن القلب',d:'تظهر بعد الجروح وسوء الصرف. اقطع الأجزاء المصابة وعقّم الأدوات.',s:1}
+ ],
+ mango:[
+  {m:[12,1,2,3],n:'البياض الدقيقي',d:'مسحوق أبيض على النورات والأوراق الصغيرة. ينتشر في الطقس البارد (15–25°م) وقد يُسقط 30–60% من الأزهار في الإصابات الشديدة.',s:0,hot:1},
+  {m:[1,2,3,4],n:'نطاط المانجو',d:'ذبول الأزهار وإفراز عسلي لزج ثم عفن أسود.',s:0},
+  {m:[2,3,4,5],n:'الأنثراكنوز',d:'بقع سوداء على الأزهار والثمار الصغيرة.',s:0},
+  {m:[3,4,5],n:'تساقط الثمار',d:'يزداد مع تذبذب الري والإصابات. حافظ على ري منتظم.',s:0},
+  {m:[5,6,7,8],n:'ذبابة الفاكهة',d:'ثقوب وطراوة في الثمار. اجمع الثمار المتساقطة.',s:0},
+  {m:[9,10,11],n:'القشريات والبق الدقيقي',d:'طبقة قطنية أو قشرية على الأغصان والأوراق.',s:0}
+ ],
+ fig:[
+  {m:ALL,n:'عفن الجذور',d:'يظهر مع التربة المشبعة. اصرف الماء ولا تغرق الشجرة.',s:0},
+  {m:ALL,n:'القشريات والديدان الثعبانية',d:'اصفرار وضعف عام وتراجع النمو.',s:1},
+  {m:ALL,n:'فيروس موزاييك التين',d:'تبقّع وتشوّه الأوراق ولا علاج له. مكافحة الحلم تقلل انتشاره، ولا تأخذ عقلاً من شجرة مصابة.',s:1},
+  {m:[8,9,10,11],n:'الصدأ وتبقّع الأوراق',d:'بقع صفراء ثم بنية على الأوراق مع الرطوبة.',s:0},
+  {m:[5,6,9],n:'تشقق الثمار',d:'يحدث من الري الغزير بعد فترة جفاف. حافظ على انتظام الري.',s:0}
+ ],
+ mulberry:[
+  {m:[11,12,1,2,3,4],n:'البياض الدقيقي',d:'مسحوق أبيض على الأوراق الصغيرة.',s:0},
+  {m:[3,4,5,6,7,8,9,10],n:'المن والعنكبوت والذبابة البيضاء',d:'التفاف الأوراق وإفراز لزج وتبقع أصفر.',s:0},
+  {m:ALL,n:'القشريات والبق الدقيقي',d:'تظهر أكثر على الأشجار الصغيرة في المناخ الدافئ.',s:0},
+  {m:ALL,n:'اللفحة البكتيرية وتبقّع الأوراق',d:'بقع داكنة على الأوراق وتقرّح على الأغصان.',s:0}
+ ]
+};
+var TASK={
+ palm:[
+  {m:[12,1],t:'قلّم السعف الجاف وقواعد الجريد (ديسمبر–يناير) حين تكون أعداد السوسة أقل، ولا تقطع الخوص الأخضر. اترك صفّين من الجريد المقلّم على الأقل لحماية القمة.',s:1},
+  {m:[1,2],t:'قبل الإزهار: أزل الأشواك لتسهيل التلقيح، واجمع أغلفة الطلع الذكرية قبل انفتاحها (نهاية يناير–فبراير).',s:1},
+  {m:[2,3,4],t:'التلقيح صباحاً بين 25 و35°م ويفضّل فور انشقاق الطلعة: ضع 6–24 شمروخاً ذكرياً في كل عذق ثم غطّه بكيس ورقي مثقوب. تجنّب الأيام الماطرة أو العاصفة.',s:1},
+  {m:[2,3],t:'خفّ الشماريخ بعد 2–3 أيام من انشقاق الطلعة وقبل التلقيح (قصّ نحو 25% من أطراف الشماريخ الطويلة وأبقِ 50–60 شمروخاً).',s:1},
+  {m:[3,4,5],t:'خفّ العذوق (منتصف مارس–منتصف مايو): أبقِ 6–8 عذوق للنخلة الناضجة وأزل الضعيف وغير الملقّح.',s:1},
+  {m:[4,5,6,7],t:'عدّل العذوق: اسحبها بين السعف على أطراف التاج واربطها بحبل ليفي (أبريل–يوليو).',s:1},
+  {m:[6,7],t:'كمّم العذوق بأكياس شبكية عند بداية تلوّن الثمار (طور البسر) لحمايتها من الطيور والتساقط.',s:1},
+  {m:[6,7,8,9],t:'الجني حسب الصنف: المبكرة من أواخر مايو–يونيو ومعظم الأصناف أغسطس–سبتمبر. نظّف الثمار المتساقطة من الحوض أولاً بأول فهي ملجأ للحشرات.',s:1},
+  {m:[3,4,5,8,9,10],t:'إزالة الفسائل وزراعتها: الخريف (أغسطس–أكتوبر) أفضل وقد تتجاوز نسبة النجاح 80%، أو الربيع (مارس–مايو). لا تترك أكثر من 3 فسائل حول الأم.',s:1}
+ ],
+ mango:[
+  {m:[9,10],t:'بعد الحصاد: قلّم لتشكيل الشجرة وإزالة الأغصان الميتة ونظّف ما تحت الشجرة.',s:0},
+  {m:[11,12],t:'قبل الإزهار: لا تكثر من الري والنيتروجين، فالبرودة والجفاف يحفّزان تكوّن البراعم الزهرية.',s:0},
+  {m:[1,2,3],t:'الإزهار: خفّف الري ولا ترش أثناء تفتّح الأزهار، وبعد عقد الثمار عُد للري المنتظم.',s:0},
+  {m:[4,5,6],t:'نمو الثمار: ري عميق منتظم وتجنّب العطش ثم الإغراق لتقليل تساقط الثمار.',s:0},
+  {m:[6,7,8],t:'الحصاد حسب الصنف عند اكتمال النمو. أوقف الرش قبله بـ15 يوماً.',s:0}
+ ],
+ fig:[
+  {m:[12,1,2],t:'السكون الشتوي: قلّم الأغصان الجافة والمتقاطعة وقلّل الري كثيراً.',s:0},
+  {m:[3,4],t:'تفتح الأوراق والنمو: ابدأ الري المنتظم والتسميد الخفيف.',s:0},
+  {m:[5,6,7],t:'الثمار: ري منتظم بلا فترات جفاف طويلة، وغطّ الثمار بشبك لحمايتها من الطيور.',s:0},
+  {m:[7,8],t:'الحر الشديد: غطّ التربة بمالش وظلّل الأشجار الصغيرة.',s:0},
+  {m:[11],t:'تتساقط الأوراق تدريجياً: قلّل الري.',s:0}
+ ],
+ mulberry:[
+  {m:[12,1,2],t:'قلّم بعد سقوط الأوراق: اقطع الميت والمتقاطع وخفّف التاج لتحسين التهوية.',s:0},
+  {m:[3,4,5],t:'الإثمار: ري منتظم وحماية الثمار من الطيور.',s:0},
+  {m:[6,7,8,9],t:'تتحمل الجفاف بعد استقرارها لكن اسقِها بعمق في الحر. الشتلات الصغيرة تحتاج ريّاً أكثر.',s:0},
+  {m:[10,11],t:'قلّل الري تدريجياً وتخلّص من الأوراق المصابة.',s:0}
+ ]
+};
+var INFO={
+ palm:[
+  ['في الإمارات أكثر من 40 مليون نخلة ونحو 200 صنف على الأقل، منها 68 صنفاً تجارياً.',1],
+  ['جذور النخلة تمتد أفقياً بمدى السعف وتنزل 3–5 أمتار، لكن 75% منها في أول 70–100 سم من التربة.',1],
+  ['الري بالتنقيط أو الفوّارات من أنسب الطرق، وتصل كفاءتها إلى 85%.',1],
+  ['مراحل الثمرة بالترتيب: الحبابوك، الكمري، الخلال (البسر)، الرطب، التمر.',1]
+ ],
+ mango:[
+  ['تحتاج المانجو تربة عميقة لجذورها الممتدة، وبيئة الإمارات مناسبة لها.',1],
+  ['قد تبدأ بالإثمار بعد 4–8 سنوات من الزراعة.',0],
+  ['يتحفّز الإزهار بالطقس البارد الجاف، ويضر به المطر والرطوبة العالية وقت الإزهار.',0]
+ ],
+ fig:[
+  ['شجرة نفضية تحب الشمس الكاملة والتربة جيدة الصرف، وتتحمل الجفاف بعد استقرارها.',0],
+  ['اترك نحو 6 أمتار بينها وبين الأشجار الأخرى.',0],
+  ['لا تتحمل التربة المشبعة بالماء، فالتغريق يسبب عفن الجذور.',0]
+ ],
+ mulberry:[
+  ['شجرة سريعة النمو قد تصل 10–20 متراً وعمرها قصير نسبياً.',0],
+  ['جذورها سطحية قرب الجذع، فازرعها بعيداً عن الأرصفة والجدران.',0],
+  ['تلقّحها الرياح وتحتاج تسميداً قليلاً.',0]
+ ]
+};
+function waterRef(m){
+  if(m===11||m===12) return 'نحو أقل من 90 لتراً لكل نخلة يومياً';
+  if(m===1||m===2) return 'حتى 110 لترات لكل نخلة يومياً';
+  if(m>=4&&m<=7) return 'حتى نحو 180 لتراً لكل نخلة يومياً في ذروة نمو الثمار';
+  return '';
+}
+
+/* ---------- helpers ---------- */
+function ico(k){
+  var p={
+   water:'<path d="M12 3c3.5 4.2 6 7.2 6 10.2a6 6 0 0 1-12 0C6 10.2 8.5 7.2 12 3z"/>',
+   plant:'<path d="M12 21v-9"/><path d="M12 12c0-4 3-6.5 7-6.5 0 4-3 6.5-7 6.5z"/><path d="M12 14c0-3-2.3-5-5.5-5 0 3 2.3 5 5.5 5z"/>',
+   fert:'<path d="M7 7h10l1.5 13h-13z"/><path d="M9 7V4h6v3"/><path d="M9.5 13h5"/>',
+   spray:'<rect x="7" y="9" width="8" height="12" rx="1.5"/><path d="M9 9V6h4v3"/><path d="M13 6h4"/><path d="M19 4v.01M19 7v.01M21 5.5v.01"/>',
+   risk:'<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17v.01"/>',
+   task:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+   leaf:'<path d="M5 19c0-8 5-13 14-14 0 9-5 14-13 14"/><path d="M5 19l8-8"/>',
+   flask:'<path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4A2 2 0 0 0 19 18l-5-9V3"/><path d="M8 15h8"/>',
+   cam:'<path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13.5" r="3.5"/>',
+   img:'<rect x="4" y="5" width="16" height="14" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="M5 17l5-5 4 4 2-2 3 3"/>',
+   tree:'<path d="M12 21v-8"/><path d="M12 13c-5 0-7-4-7-8 4 0 7 2 7 8z"/><path d="M12 13c5 0 7-4 7-8-4 0-7 2-7 8z"/>'
+  };
+  return '<svg viewBox="0 0 24 24" aria-hidden="true">'+(p[k]||p.task)+'</svg>';
+}
+function tag(s){return s?'<span class="tag loc">مرجع الإمارات</span>':'<span class="tag">إرشاد عام</span>';}
+function card(kind,title,inner,sub,cls){
+  return '<section class="card k-'+kind+(cls?' '+cls:'')+'"><h3><span class="ic">'+ico(kind)+'</span>'+title+'</h3>'+(sub?'<p class="sub">'+sub+'</p>':'')+inner+'</section>';
+}
+function inMonths(item,months){for(var i=0;i<months.length;i++){if(item.m.indexOf(months[i])>-1)return true;}return false;}
+function dotP(p){return '<i class="dot" style="background:var(--c-'+p+')"></i>';}
+function byPlant(obj,months,render,only){
+  var out='';
+  PL.forEach(function(p){
+    if(only&&p!==only) return;
+    var items=(obj[p]||[]).filter(function(x){return inMonths(x,months);});
+    if(!items.length) return;
+    out+='<div class="grp">'+(only?'':'<div class="pn">'+dotP(p)+PN[p]+'</div>')+items.map(function(x){return render(x,p);}).join('')+'</div>';
+  });
+  return out||'<p class="empty">لا شيء مجدول لهذا الأسبوع.</p>';
+}
+function weekDays(){var a=[],i;for(i=0;i<7;i++)a.push(TODAY+i*DAY);return a;}
+function weekMonths(){var ms=[];weekDays().forEach(function(d){var m=monthOf(d);if(ms.indexOf(m)===-1)ms.push(m);});return ms;}
+
+/* ---------- watering ---------- */
+function logs(p){return (state.log[p]||[]).map(parse).filter(function(x){return x<=TODAY;}).sort(function(a,b){return a-b;});}
+function schedule(p,toMs){
+  var lg=logs(p), last=lg.length?lg[lg.length-1]:null, out=[];
+  var next=last===null?TODAY:last+iv(p,monthOf(last))*DAY;
+  if(next<TODAY) next=TODAY;
+  var g=0;
+  while(next<=toMs&&g++<400){out.push(next); next=next+iv(p,monthOf(next))*DAY;}
+  return out;
+}
+function pstat(p){
+  var lg=logs(p), last=lg.length?lg[lg.length-1]:null;
+  var sch=schedule(p,TODAY+90*DAY), next=sch[0];
+  return {st:last===TODAY?'done':(next===TODAY?'due':'rest'),last:last,next:next};
+}
+function toggleToday(p){
+  var arr=state.log[p]||[], t=fmt(TODAY), i=arr.indexOf(t);
+  if(i>-1) arr.splice(i,1); else arr.push(t);
+  state.log[p]=arr.slice(-90); store.set('bm_log',state.log);
+}
+function nextSwitch(){
+  var d=new Date(TODAY), y=d.getUTCFullYear(), m=monthOf(TODAY), tgt, to;
+  if(isSummer(m)){tgt=Date.UTC(y,10,1);to='win';}
+  else{tgt=Date.UTC(m>=11?y+1:y,3,1);to='sum';}
+  return {days:Math.round((tgt-TODAY)/DAY),to:to};
+}
+
+/* ---------- farm tab ---------- */
+function recs(){
+  var m=monthOf(TODAY), r=[];
+  var due=PL.filter(function(p){return pstat(p).st==='due';});
+  if(due.length) r.push(['water','اسقِ اليوم: '+due.map(function(p){return PN[p];}).join('، ')+'.']);
+  else r.push(['water','لا سقي مجدول اليوم. تحقق من رطوبة التربة قبل أي سقية إضافية.']);
+  var sw=nextSwitch();
+  if(sw.days>0&&sw.days<=14){
+    r.push(['water',sw.to==='win'?('بعد '+daysAr(sw.days)+' يبدأ الجدول الشتوي: النخيل كل 6–7 أيام بدل 3–5.'):('بعد '+daysAr(sw.days)+' يبدأ الجدول الصيفي: النخيل كل 3–5 أيام.')]);
+  }
+  weekMonths().forEach(function(mm){PL.forEach(function(p){(FERT[p]||[]).forEach(function(x){if(x.h&&x.m.indexOf(mm)>-1&&!r.some(function(y){return y[1]===x.h+'.';})) r.push(['fert',x.h+'.']);});});});
+  var list=CROPS.filter(function(c){return c.m.indexOf(m)>-1;});
+  if(list.length) r.push(['plant','يمكنك زراعة: '+list.slice(0,6).map(function(c){return c.n;}).join('، ')+(list.length>6?' وغيرها.':'.')]);
+  else r.push(['plant',PNOTE[m][0]]);
+  var hot=[];
+  PL.forEach(function(p){(DIS[p]||[]).forEach(function(x){if(x.hot&&x.m.indexOf(m)>-1) hot.push(PN[p]+': '+x.n);});});
+  if(hot.length) r.push(['risk','راقب: '+hot.join('، ')+'.']);
+  return r;
+}
+function recsCard(){
+  var items=recs().map(function(x){return '<li class="'+x[0]+'"><i>'+ico(x[0])+'</i><span>'+x[1]+'</span></li>';}).join('');
+  var sea=isSummer(monthOf(TODAY))?'جدول الري الصيفي (أبريل–أكتوبر)':'جدول الري الشتوي (نوفمبر–مارس)';
+  return '<section class="card recs"><h3><span class="ic" style="background:var(--surface);color:var(--leaf)">'+ico('leaf')+'</span>توصيات الأسبوع</h3><p class="sub">'+sea+'</p><ul>'+items+'</ul></section>';
+}
+function tilesCard(){
+  var due=PL.filter(function(p){return pstat(p).st==='due';}).length;
+  var t='<div class="tiles">'+PL.map(function(p){
+    var s=pstat(p), label, sub, nd=s.next?Math.round((s.next-TODAY)/DAY):0;
+    if(s.st==='due'){label='اسقِ اليوم';sub=ivText(p,monthOf(TODAY));}
+    else if(s.st==='done'){label='تم السقي';sub='القادمة بعد '+daysAr(nd);}
+    else {label='بدون ماء اليوم';sub='القادمة بعد '+daysAr(nd);}
+    return '<button class="tile '+s.st+'" style="--tc:var(--c-'+p+')" data-act="water" data-p="'+p+'" aria-label="'+PN[p]+': '+label+'"><span class="tb">'+(s.st==='done'?ico('task'):DROP)+'</span><b>'+PN[p]+'</b><span class="tl">'+label+'</span><small>'+sub+'</small></button>';
+  }).join('')+'</div>';
+  return '<section class="today"><div class="th"><h3>سقي اليوم</h3><span>'+(due?(due+' من 4 تحتاج سقياً'):'كل الأشجار مرتوية')+'</span></div>'+t+'<p class="note" style="margin:8px 4px 0">اضغط على الشجرة بعد أن تسقيها لتسجيل السقية، واضغط مرة ثانية للتراجع.</p></section>';
+}
+function stripCard(){
+  var days=weekDays(), sched={};
+  PL.forEach(function(p){sched[p]={};schedule(p,days[6]).forEach(function(d){sched[p][d]=1;});});
+  var cols=days.map(function(d,k){
+    var cells=PL.map(function(p){
+      var done=k===0&&logs(p).indexOf(TODAY)>-1, st='style="--tc:var(--c-'+p+')"';
+      if(done) return '<span class="dr ck" '+st+' aria-label="'+PN[p]+': تم السقي">'+ico('task')+'</span>';
+      if(sched[p][d]) return '<span class="dr" '+st+' aria-label="'+PN[p]+': سقي">'+DROP+'</span>';
+      return '<span class="dr off" aria-label="'+PN[p]+': بدون ماء"></span>';
+    }).join('');
+    return '<div class="dcol'+(k===0?' today':'')+'"><span class="dn">'+F_WD.format(d)+'</span><b class="dd">'+new Date(d).getUTCDate()+'</b>'+cells+'</div>';
+  }).join('');
+  var leg='<div class="leg">'+PL.map(function(p){return '<span>'+dotP(p)+PN[p]+'</span>';}).join('')+'</div>';
+  return card('water','جدول الري هذا الأسبوع','<div class="wk">'+cols+'</div>'+leg,'القطرة تعني يوم سقي لتلك الشجرة بلونها. الأيام القادمة تُحسب من آخر سقية سجّلتها.');
+}
+function stepper(p,k,label,v){
+  return '<div class="stp"><span>'+label+': كل</span><div class="ctl"><button data-act="iv" data-p="'+p+'" data-k="'+k+'" data-d="-1" aria-label="أنقص">−</button><output>'+v+'</output><button data-act="iv" data-p="'+p+'" data-k="'+k+'" data-d="1" aria-label="زِد">+</button><span>أيام</span></div></div>';
+}
+function waterRow(p){
+  var m=monthOf(TODAY), s=pstat(p), c=cfgOf(p), ov=state.cfg[p]||{}, open=state.open[p], sub;
+  if(s.st==='due') sub=s.last?('آخر سقية قبل '+daysAr(Math.round((TODAY-s.last)/DAY))):'لم تُسجَّل سقية بعد';
+  else sub='السقية القادمة: '+F_SHORT.format(s.next)+' (بعد '+daysAr(Math.round((s.next-TODAY)/DAY))+')';
+  var h='<div class="row"><div class="nm"><b>'+dotP(p)+ivText(p,m)+'</b><small>'+restText(p,m)+'</small><small>'+sub+'</small></div></div>';
+  h+='<div class="meta">'+(p==='palm'&&!ov.sum&&!ov.win?tag(1):'<span class="tag">'+(p==='palm'?'معدّل':'افتراضي، عدّله حسب تجربتك')+'</span>')+
+    '<button class="btn ghost" data-act="edit" data-p="'+p+'">'+(open?'إغلاق':'تعديل الفترة')+'</button></div>';
+  if(open){
+    h+='<div class="edit">'+stepper(p,'sum','صيفاً (أبريل–أكتوبر)',c.sum)+stepper(p,'win','شتاءً (نوفمبر–مارس)',c.win)+
+      '<button class="btn ghost" data-act="reset" data-p="'+p+'" style="align-self:flex-start">الرجوع للافتراضي</button></div>';
+  }
+  return h;
+}
+function treeDetail(p){
+  var ms=weekMonths(), ref=(p==='palm')?waterRef(monthOf(TODAY)):'';
+  var inner=waterRow(p);
+  if(ref) inner+='<p class="note">احتياج النخلة المرجعي هذا الشهر: '+ref+'. قياسات مركز ICBA في دبي لمزرعة تجارية، وتتغير مع الصنف والتربة والعمر.</p>';
+  inner+='<p class="note">تحقق من رطوبة التربة باللمس قبل السقي. كثير من المزارعين في الإمارات يسقون النخيل بأكثر من ضعف المطلوب، والإفراط يجذب سوسة النخيل ويسبب الأمراض الفطرية.</p>';
+  var tasks=byPlant(TASK,ms,function(x){return '<div class="it"><p>'+x.t+'</p><div>'+tag(x.s)+'</div></div>';},p);
+  var dis=byPlant(DIS,ms,function(x){return '<div class="it"><div class="ty"><b>'+x.n+'</b>'+tag(x.s)+'</div><p>'+x.d+'</p></div>';},p);
+  return card('water','ري '+PN[p],inner)+card('task','أعمال '+PN[p]+' هذا الأسبوع',tasks)+card('risk','ما يُراقب على '+PN[p],dis,'الأمراض والآفات المتوقعة في هذه الفترة.');
+}
+function viewFarm(){
+  var chips='<div class="sel">'+PL.map(function(p){return '<button data-act="sel" data-p="'+p+'" aria-pressed="'+(state.sel===p)+'">'+dotP(p)+PN[p]+'</button>';}).join('')+'</div>';
+  return tilesCard()+stripCard()+recsCard()+chips+treeDetail(state.sel);
+}
+
+/* ---------- care tab ---------- */
+function palmCalc(){
+  var a=state.age, open=state.open.calc;
+  var h='<div style="padding-top:8px;border-top:1px solid var(--line);margin-top:6px"><button class="btn" data-act="calc">'+(open?'إخفاء حاسبة سماد النخلة':'حاسبة سماد النخلة')+'</button>';
+  if(open){
+    var org=a<=10?('لا يقل عن '+(5*a)+' كجم'):'حتى 50 كجم';
+    var chem=a<=10?((150*a)+' جم'):'1.5 كجم';
+    var urea=a<=10?((100*a)+' جم'):'1 كجم';
+    h+='<div class="edit" style="margin-top:8px"><div class="stp"><span>عمر النخلة</span><div class="ctl"><button data-act="age" data-d="-1" aria-label="أنقص">−</button><output>'+a+'</output><button data-act="age" data-d="1" aria-label="زِد">+</button><span>سنة</span></div></div>'+
+    '<div class="scroll"><table class="tbl"><tr><th>النوع</th><th>الكمية سنوياً</th><th>الوقت</th></tr>'+
+    '<tr><td>عضوي متحلل</td><td>'+org+'</td><td>نهاية أكتوبر–ديسمبر</td></tr>'+
+    '<tr><td>مركّب بعناصر صغرى</td><td>'+chem+'</td><td>نهاية أكتوبر–ديسمبر</td></tr>'+
+    '<tr><td>يوريا</td><td>'+urea+'</td><td>يناير</td></tr>'+
+    '<tr><td>احتياج العناصر</td><td>'+(200*a)+' جم N + '+(75*a)+' جم P + '+(100*a)+' جم K</td><td>على مدار السنة</td></tr></table></div>'+
+    '<p class="note" style="margin:0">من تقويم رعاية النخيل في أبوظبي. الأفضل أن يستند البرنامج النهائي إلى تحليل التربة والماء. أدخل عمر نخلتك الفعلي.</p></div>';
+  }
+  return h+'</div>';
+}
+function viewCare(){
+  var ms=weekMonths(), sub=state.sub, body;
+  var seg='<div class="sub-seg">'+[['fert','التسميد'],['spray','المبيدات'],['tonic','المقويات']].map(function(x){return '<button data-act="sub" data-s="'+x[0]+'" aria-pressed="'+(sub===x[0])+'">'+x[1]+'</button>';}).join('')+'</div>';
+  var days=weekDays(), range='من '+F_DM.format(days[0])+' إلى '+F_DM.format(days[6]);
+  if(sub==='fert'){
+    body=card('fert','التسميد',byPlant(FERT,ms,function(x){return '<div class="it"><p>'+x.t+'</p><div>'+tag(x.s)+'</div></div>';})+palmCalc(),range);
+  } else if(sub==='spray'){
+    body=card('spray','المبيدات والمعالجة',byPlant(SPRAY,ms,function(x){return '<div class="it"><div class="ty"><b>'+x.ty+'</b>'+tag(x.s)+'</div><p>'+x.t+'</p></div>';})+
+      '<p class="note">أذكر نوع المعالجة وتوقيتها دون جرعات. استخدم منتجات مسجّلة في الإمارات واتبع الملصق وفترة الأمان قبل الحصاد.</p>',range);
+  } else {
+    body=card('plant','المقويات',byPlant(TONIC,ms,function(x){return '<div class="it"><p>'+x.t+'</p><div>'+tag(x.s)+'</div></div>';})+
+      '<p class="note">المقويات تدعم الشجرة وقت الإجهاد، ولا تعوّض الري المنتظم والتسميد الأساسي.</p>',range);
+  }
+  return seg+body;
+}
+
+/* ---------- plant tab ---------- */
+function cropChips(list,months){
+  return '<div class="chips">'+list.map(function(c){
+    var extra='';
+    if(c.last&&months.some(function(mm){return c.last.indexOf(mm)>-1;})) extra='<em>آخر فرصة</em>';
+    else if(c.pref&&months.some(function(mm){return c.pref.indexOf(mm)>-1;})) extra='<em>الأفضل الآن</em>';
+    return '<span class="chip">'+c.n+extra+'</span>';
+  }).join('')+'</div>';
+}
+function viewPlant(){
+  var m=monthOf(TODAY), nm=m===12?1:m+1, ms=[m];
+  var now=CROPS.filter(function(c){return c.m.indexOf(m)>-1;});
+  var inner='';
+  GROUPS.forEach(function(g){
+    var l=now.filter(function(c){return c.g===g;});
+    if(l.length) inner+='<div class="gt">'+g+'</div>'+cropChips(l,ms);
+  });
+  if(!now.length) inner='<p class="empty">لا توجد زراعة موصى بها هذا الشهر.</p>';
+  inner+='<p class="note">'+PNOTE[m][0]+' '+tag(PNOTE[m][1])+'</p>';
+  var soon=CROPS.filter(function(c){return c.m.indexOf(nm)>-1&&c.m.indexOf(m)===-1;});
+  var out=card('plant','ماذا أزرع الآن',inner,'مناسب لهذا الأسبوع في المنطقة.');
+  if(soon.length) out+=card('plant','يدخل موسمه الشهر القادم',cropChips(soon,[nm]));
+  return out;
+}
+
+/* ---------- info + photo tab ---------- */
+var photo={ok:null,busy:false,url:null,res:null,err:'',note:'',ctl:null};
+var sampleFn=null;
+function initSample(){
+  if(!(window.claude&&window.claude.use)){photo.ok=false;return;}
+  window.claude.use('sample').then(function(s){
+    if(!s){photo.ok=false;return;}
+    sampleFn=s;
+    return s.limits().then(function(l){photo.ok=!!l.images;}).catch(function(){photo.ok=false;});
+  }).catch(function(){photo.ok=false;}).then(function(){if(state.tab==='info') render();});
+}
+function buildPrompt(note){
+  return 'أنت خبير زراعة يعمل في دولة الإمارات، منطقة أبوظبي (مصفح): تربة رملية قلوية، حرارة عالية صيفاً، ورطوبة في الخريف.\n'+
+  'الصورة المرفقة لنبات أو شجرة أو جزء منها. افحصها وأجب بقيمة JSON واحدة فقط، بالعربية البسيطة، بهذا الشكل بالضبط:\n'+
+  '{"identified":true,"name_ar":"","name_sci":"","confidence":"عالية|متوسطة|منخفضة","part_seen":"","health":"سليمة|تحتاج انتباه|مصابة|غير واضح","health_summary":"","problems":[{"name":"","evidence":"","likelihood":"مرجّح|محتمل|ممكن"}],"actions":[""],"uae_notes":[""],"see_expert":false,"expert_reason":""}\n'+
+  'القواعد: صف فقط ما تراه فعلاً في الصورة ولا تخترع أعراضاً. إن كانت الصورة غير واضحة أو لا تُظهر نباتاً فاجعل identified=false واطلب صورة أوضح (ورقة قريبة، الجذع، الثمرة، أسفل الورقة) في health_summary. '+
+  'في problems اذكر السبب المحتمل وما رأيته دليلاً عليه. في actions خطوات عملية قصيرة. لا تذكر جرعات مبيدات: اذكر نوع المعالجة فقط ونبّه لاستخدام منتج مسجّل في الإمارات واتباع الملصق. '+
+  'لو ظهرت علامات سوسة النخيل الحمراء فاجعل see_expert=true وانصح بالإبلاغ لهيئة أبوظبي للزراعة والسلامة الغذائية. '+
+  'في uae_notes معلومات مختصرة عن هذا النبات في الإمارات (الري، التسميد، الموسم).'+
+  (note?('\nملاحظة من صاحب الشجرة: '+note):'');
+}
+function errCopy(code){
+  var m={not_granted:'لم يتم السماح للصفحة باستخدام Claude. أعد فتح الصفحة ووافق عند الطلب.',
+    rate_limited:'عدد المحاولات كبير الآن. انتظر قليلاً ثم جرّب.',
+    image_rejected:'تعذّرت قراءة الصورة. جرّب صورة JPEG أو PNG أوضح.',
+    invalid_json:'ما قدرت أحلل الصورة بشكل مفهوم. جرّب صورة أقرب وأوضح.',
+    empty_completion:'ما قدرت أحلل الصورة بشكل مفهوم. جرّب صورة أقرب وأوضح.',
+    refused:'ما قدرت أحلل هذه الصورة. جرّب صورة أخرى.',
+    session_expired:'انتهت الجلسة. سجّل الدخول من جديد.'};
+  return m[code]||'تعذّر الفحص الآن، جرّب مرة ثانية.';
+}
+async function analyze(file){
+  if(!sampleFn) return;
+  var nEl=document.getElementById('note'); if(nEl) photo.note=nEl.value||'';
+  if(photo.url){try{URL.revokeObjectURL(photo.url);}catch(e){}}
+  photo.url=URL.createObjectURL(file); photo.busy=true; photo.res=null; photo.err='';
+  photo.ctl=new AbortController(); render();
+  try{
+    photo.res=await sampleFn.json(buildPrompt(photo.note.trim()),{images:file,signal:photo.ctl.signal,modelTier:'default'});
+  }catch(e){
+    photo.err=(e&&e.code==='cancelled')?'':errCopy(e&&e.code);
+  }
+  photo.busy=false; photo.ctl=null; render();
+}
+function list(a){return Array.isArray(a)?a.filter(function(x){return typeof x==='string'&&x;}):[];}
+function resultHtml(r){
+  if(!r||typeof r!=='object') return '';
+  var h=String(r.health||''), cls=h==='سليمة'?'ok':h==='تحتاج انتباه'?'warn':h==='مصابة'?'bad':'na';
+  var out='<div class="res">';
+  if(r.identified===false||!r.name_ar){
+    out+='<p><span class="badge na">غير واضح</span></p><p style="margin-top:8px">'+esc(r.health_summary||'ما قدرت أتعرف على النبات من هذه الصورة. جرّب صورة أقرب وأوضح.')+'</p>';
+  } else {
+    out+='<div style="font-size:19px;font-weight:800">'+esc(r.name_ar)+'</div>'+(r.name_sci?'<div class="sci">'+esc(r.name_sci)+'</div>':'')+
+      '<div class="meta" style="padding-top:6px"><span class="badge '+cls+'">'+esc(h||'غير واضح')+'</span>'+(r.confidence?'<span class="tag">ثقة التعرّف: '+esc(r.confidence)+'</span>':'')+(r.part_seen?'<span class="tag">'+esc(r.part_seen)+'</span>':'')+'</div>';
+    if(r.health_summary) out+='<p>'+esc(r.health_summary)+'</p>';
+    var pr=Array.isArray(r.problems)?r.problems.filter(function(x){return x&&x.name;}):[];
+    if(pr.length) out+='<h4>ما قد تعانيه الشجرة</h4><ul>'+pr.map(function(x){return '<li><b>'+esc(x.name)+'</b>'+(x.likelihood?' ('+esc(x.likelihood)+')':'')+(x.evidence?': '+esc(x.evidence):'')+'</li>';}).join('')+'</ul>';
+    var ac=list(r.actions); if(ac.length) out+='<h4>ما تفعله</h4><ul>'+ac.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul>';
+    var un=list(r.uae_notes); if(un.length) out+='<h4>معلومات عن النبات في الإمارات</h4><ul>'+un.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul>';
+    if(r.see_expert) out+='<p style="margin-top:10px"><span class="badge bad">استشر مختصاً</span> '+esc(r.expert_reason||'')+'</p>';
+  }
+  return out+'<p class="note">التحليل من الصورة فقط وقد يخطئ. للحالات الشديدة راجع مرشداً زراعياً.</p></div>';
+}
+function photoCard(){
+  var inner='';
+  if(photo.ok===null) inner='<p class="empty"><span class="spin"></span>جارٍ التحضير…</p>';
+  else if(!photo.ok) inner='<p class="empty">فحص الصور (التعرف على الشجرة وصحتها) غير متاح في نسخة التطبيق المستقل، وهو يعمل فقط في نسخة Claude. باقي التابات تعمل كاملة بدون إنترنت.</p>';
+  else {
+    if(photo.url) inner+='<img class="prev" src="'+photo.url+'" alt="الصورة المرفوعة">';
+    if(photo.busy) inner+='<p><span class="spin"></span>جارٍ فحص الصورة… قد يستغرق دقيقة</p><button class="btn" data-act="stop">إيقاف</button>';
+    else {
+      if(photo.err) inner+='<p class="note" style="color:var(--risk);margin:0 0 8px">'+esc(photo.err)+'</p>';
+      if(photo.res) inner+=resultHtml(photo.res);
+      inner+='<textarea class="q" id="note" rows="1" placeholder="ماذا تلاحظ؟ مثال: الأوراق تصفر من أسبوعين (اختياري)">'+esc(photo.note)+'</textarea>'+
+        '<div class="pick"><label class="btn main" for="f-cam">'+ico('cam')+(photo.res||photo.url?'صورة جديدة':'التقط صورة')+'</label>'+
+        '<label class="btn" for="f-gal">'+ico('img')+'من المعرض</label>'+
+        '<input type="file" id="f-cam" accept="image/*" capture="environment"><input type="file" id="f-gal" accept="image/*"></div>';
+    }
+  }
+  return card('cam','اعرف شجرتك بالصورة',inner,'صوّر الشجرة أو الورقة أو الثمرة، أو أضف صورة من المعرض، وأعطيك النوع والحالة الصحية ومعلومات عنها.');
+}
+function viewInfo(){
+  var out=photoCard();
+  out+=PL.map(function(p){
+    return card('tree',PN[p],INFO[p].map(function(x){return '<div class="it"><p>'+x[0]+'</p><div>'+tag(x[1])+'</div></div>';}).join(''));
+  }).join('');
+  return out;
+}
+
+/* ---------- shell ---------- */
+var TABS={farm:['زراعتي','tree','زراعتي','الري والأعمال وما يُراقب هذا الأسبوع'],care:['التسميد والرش','flask','التسميد والرش','التسميد والمبيدات والمقويات لهذا الأسبوع'],plant:['ماذا أزرع','plant','ماذا أزرع','الأنسب لهذا الشهر في منطقتك'],info:['اعرف شجرتك','cam','اعرف شجرتك','صوّر الشجرة واعرف نوعها وصحتها ومعلومات عنها']};
+function pageHead(){var t=TABS[state.tab];return '<div class="ph"><h2>'+t[2]+'</h2><p>'+t[3]+'</p></div>';}
+function sources(){
+  var S=[
+   ['ICBA، كم ماء تحتاج النخلة؟ (2023)','https://iiqp.biosaline.org/sites/default/files/2023-11/date-palm-guideline.pdf'],
+   ['تقويم رعاية النخيل في إمارة أبوظبي، المشهداني','https://iraqi-datepalms.net/wp-content/uploads/2018/10/FifthInternationalConference5.pdf'],
+   ['هيئة أبوظبي للزراعة والسلامة الغذائية: استراتيجية النخيل (وام)','https://wam.ae/en/details/1395303197513'],
+   ['دليل زراعة الفواكه والخضار في الإمارات، BBC Good Food ME','https://www.bbcgoodfoodme.com/how-to/a-guide-to-growing-fruits-and-vegetables-in-the-uae/'],
+   ['تقويم الزراعة في دبي، أكاسيا','https://acaciagardencenter.com/blogs/blog/dubai-planting-calendar'],
+   ['العناية الموسمية بالمانجو، UF/IFAS','https://blogs.ifas.ufl.edu/stlucieco/2025/06/26/mango-tree-seasonal-care/'],
+   ['زراعة المانجو، TNAU','https://agritech.tnau.ac.in/horticulture/horti_fruits_mango.html'],
+   ['آفات وأمراض التين، PlantVillage','https://plantvillage.psu.edu/topics/fig/infos']
+  ];
+  return '<h4>المصادر</h4><p><b>مرجع الإمارات</b>: من مصدر خاص بالإمارات أو أبوظبي. <b>إرشاد عام</b>: ممارسات شائعة لأشجار الفاكهة لم أجد لها أرقاماً مُختبرة في الإمارات، فاعتبرها نقطة بداية وعدّل عليها من تجربتك أو اسأل مرشداً زراعياً.</p><ul>'+
+   S.map(function(x){return '<li><a href="'+x[1]+'" target="_blank" rel="noopener">'+x[0]+'</a></li>';}).join('')+'</ul>'+
+   '<p>أرقام الري للنخيل من تقويم أبوظبي. فترات المانجو والتين والتوت افتراضية قابلة للتعديل. لا توجد هنا جرعات مبيدات، فاتبع ملصق المنتج المسجّل في الإمارات.</p>';
+}
+function render(){
+  var days=weekDays();
+  document.getElementById('dateLine').textContent=F_DATE.format(TODAY);
+  document.getElementById('weekLine').textContent='الأسبوع: '+F_DM.format(days[0])+' – '+F_DM.format(days[6]);
+    Object.keys(TABS).forEach(function(t){
+    var b=document.getElementById('b-'+t);
+    b.innerHTML=ico(TABS[t][1])+'<span>'+TABS[t][0]+'</span>';
+    b.setAttribute('aria-selected',state.tab===t?'true':'false');
+  });
+  var v=pageHead()+(state.tab==='farm'?viewFarm():state.tab==='care'?viewCare():state.tab==='plant'?viewPlant():viewInfo());
+  document.getElementById('view').innerHTML=v;
+  document.getElementById('foot').innerHTML=state.tab==='info'?'':sources();
+  clock();
+}
+function clock(){document.getElementById('clock').textContent=F_TIME.format(new Date())+' بتوقيت الإمارات';}
+
+document.addEventListener('click',function(e){
+  var el=e.target.closest('[data-act]'); if(!el) return;
+  var a=el.getAttribute('data-act'), p=el.getAttribute('data-p'), d=Number(el.getAttribute('data-d')||0);
+  if(a==='tab'){state.tab=el.getAttribute('data-t'); window.scrollTo(0,0);}
+  else if(a==='sel'){state.sel=p;}
+  else if(a==='sub'){state.sub=el.getAttribute('data-s');}
+  else if(a==='water'){toggleToday(p);}
+  else if(a==='edit'){state.open[p]=!state.open[p];}
+  else if(a==='calc'){state.open.calc=!state.open.calc;}
+  else if(a==='iv'){var k=el.getAttribute('data-k'), c=cfgOf(p); state.cfg[p]=state.cfg[p]||{}; state.cfg[p][k]=Math.min(30,Math.max(1,c[k]+d)); store.set('bm_cfg',state.cfg);}
+  else if(a==='reset'){delete state.cfg[p]; store.set('bm_cfg',state.cfg);}
+  else if(a==='age'){state.age=Math.min(60,Math.max(1,state.age+d)); store.set('bm_age',state.age);}
+  else if(a==='stop'){if(photo.ctl) photo.ctl.abort(); return;}
+  render();
+});
+document.addEventListener('change',function(e){
+  var t=e.target; if(!t||(t.id!=='f-cam'&&t.id!=='f-gal')) return;
+  var f=t.files&&t.files[0]; if(f) analyze(f);
+});
+document.addEventListener('input',function(e){if(e.target&&e.target.id==='note') photo.note=e.target.value;});
+setInterval(function(){var t=todayMs(); if(t!==TODAY){TODAY=t; render();} else clock();},30000);
+render();
+initSample();
+})();
+</script>
+<script>
+if('serviceWorker' in navigator && location.protocol!=='file:'){
+  window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});
+}
+</script>
+</body>
+</html>
