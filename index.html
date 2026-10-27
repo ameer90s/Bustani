@@ -75,7 +75,7 @@ h1,h2,h3,p{margin:0}
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cpath d='M28 5l5.5 10.5L45 12.5l-3 11.5 11 4-11 4 3 11.5-11.500-3L28 51l-5.500-10.500L11 43.500l3-11.500L3 28l11-4-3-11.500 11.500 3z' fill='none' stroke='%23ffffff' stroke-opacity='.07' stroke-width='1'/%3E%3C/svg%3E"),
     linear-gradient(165deg,var(--hero1),var(--hero2));
   margin-left:calc(-1*var(--gl)); margin-right:calc(-1*var(--gr)); padding:24px var(--gr) 26px var(--gl); border-radius:0 0 36px 36px; min-height:196px}
-.hero .scene{position:absolute; left:0; bottom:0; height:100%; width:46%; pointer-events:none}
+.hero .scene{overflow:visible; position:absolute; left:0; bottom:0; height:100%; width:46%; pointer-events:none}
 .hc{position:relative; max-width:720px; margin:0 auto; display:flex; flex-direction:column; align-items:flex-start; gap:4px}
 .hc>*{max-width:54%}
 .hn{font-family:var(--fd); font-size:50px; font-weight:400; line-height:1.05}
@@ -167,8 +167,13 @@ main{display:flex; flex-direction:column; gap:14px; padding-top:18px}
 .gt:first-of-type{margin-top:2px}
 .note{font-size:13.5px; color:var(--muted); margin-top:8px}
 
-.sel{display:grid; grid-template-columns:repeat(4,1fr); gap:6px}
+.sel{display:grid; grid-template-columns:repeat(auto-fit,minmax(76px,1fr)); gap:6px}
 .sel button{border:1px solid var(--line); background:var(--surface); border-radius:14px; padding:7px 2px; font-weight:700; font-size:13.5px; display:flex; flex-direction:column; align-items:center; gap:2px}
+.sel button.add{border-style:dashed; color:var(--muted); background:transparent}
+.fld{width:100%; border:1px solid var(--line); background:var(--surface2); border-radius:14px; padding:9px 12px; font-size:15px; margin-bottom:8px; color:var(--ink)}
+.sws{display:flex; flex-wrap:wrap; gap:10px; margin:2px 0 10px}
+.swb{width:34px; height:34px; border-radius:50%; border:3px solid var(--surface); box-shadow:0 0 0 2px var(--line)}
+.swb[aria-pressed="true"]{box-shadow:0 0 0 3px var(--ink)}
 .sel button[aria-pressed="true"]{background:var(--ink); color:var(--bg); border-color:transparent}
 .sub-seg{display:grid; grid-template-columns:repeat(3,1fr); gap:5px; background:var(--surface2); padding:4px; border-radius:16px}
 .sub-seg button{border:0; background:transparent; padding:7px 2px; border-radius:12px; font-weight:700; font-size:14px; color:var(--muted)}
@@ -240,11 +245,12 @@ footer p{margin-bottom:8px}
   <header class="hero">
     <svg class="scene" viewBox="0 0 180 200" preserveAspectRatio="xMinYMax meet" aria-hidden="true">
       <defs><radialGradient id="sg" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FFE9A3"/><stop offset="1" stop-color="#F2A93E"/></radialGradient></defs>
+      <mask id="fade"><linearGradient id="mg" x1="0" x2="1"><stop offset="0" stop-color="#fff"/><stop offset=".55" stop-color="#fff"/><stop offset="1" stop-color="#000"/></linearGradient><rect x="-80" y="0" width="260" height="200" fill="url(#mg)"/></mask>
       <circle cx="62" cy="70" r="52" fill="#FFD27A" opacity=".16"/>
       <circle cx="62" cy="70" r="32" fill="url(#sg)"/>
-      <path d="M0 150 Q55 118 115 142 T180 130 V200 H0Z" fill="#F2C879" opacity=".30"/>
-      <path d="M0 168 Q60 140 120 162 T180 152 V200 H0Z" fill="#E9AE5A" opacity=".42"/>
-      <path d="M0 186 Q70 166 130 182 T180 176 V200 H0Z" fill="#06262D" opacity=".55"/>
+      <g mask="url(#fade)"><path d="M-80 150 Q55 118 115 142 T180 130 V200 H-80Z" fill="#F2C879" opacity=".30"/>
+      <path d="M-80 168 Q60 140 120 162 T180 152 V200 H-80Z" fill="#E9AE5A" opacity=".42"/>
+      <path d="M-80 186 Q70 166 130 182 T180 176 V200 H-80Z" fill="#06262D" opacity=".55"/></g>
       <g stroke="#06262D" stroke-linecap="round" fill="none">
         <path d="M128 192 C130 160 126 132 136 96" stroke-width="6"/>
         <path d="M136 96 Q114 78 88 92" stroke-width="4.5"/>
@@ -295,14 +301,26 @@ function daysAr(n){return n===1?'يوم واحد':n===2?'يومان':(n>=3&&n<=1
 var store={get:function(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}},
            set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
 var TODAY=todayMs();
-var state={tab:'farm',sel:'palm',sub:'fert',log:store.get('bm_log',{}),cfg:store.get('bm_cfg',{}),age:store.get('bm_age',10),open:{}};
+var state={tab:'farm',sel:'palm',sub:'fert',log:store.get('bm_log',{}),cfg:store.get('bm_cfg',{}),age:store.get('bm_age',10),open:{},custom:store.get('bm_custom',[]),draft:null};
+if(!Array.isArray(state.custom)) state.custom=[];
 
 /* ---------- data ---------- */
 var DROP='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c3.5 4.2 6 7.2 6 10.2a6 6 0 0 1-12 0C6 10.2 8.5 7.2 12 3z"/></svg>';
-var PL=['palm','mango','fig','mulberry'];
+var BASE=['palm','mango','fig','mulberry'];
+var PL=BASE.slice();
+var SW=['#2E86C1','#D9534F','#16A085','#C9A100','#8E5A3C','#E0629A','#6C7A89','#7CB518'];
+var MAXC=8;
+function isCustom(p){return BASE.indexOf(p)===-1;}
+function custom(p){for(var i=0;i<state.custom.length;i++){if(state.custom[i].id===p)return state.custom[i];}return null;}
 var PN={palm:'النخيل',mango:'المانجو',fig:'التين',mulberry:'التوت'};
 var ALL=[1,2,3,4,5,6,7,8,9,10,11,12], COOL=[10,11,12,1,2,3];
 var DEF={palm:{sum:4,win:6},mango:{sum:3,win:7},fig:{sum:3,win:8},mulberry:{sum:4,win:8}};
+function syncPlants(){
+  PL=BASE.concat(state.custom.map(function(c){return c.id;}));
+  state.custom.forEach(function(c){PN[c.id]=esc(c.name);DEF[c.id]={sum:c.sum,win:c.win};document.documentElement.style.setProperty('--c-'+c.id,c.color);});
+  if(PL.indexOf(state.sel)===-1) state.sel='palm';
+}
+syncPlants();
 function cfgOf(p){var o={sum:DEF[p].sum,win:DEF[p].win},c=state.cfg[p]||{};if(c.sum)o.sum=c.sum;if(c.win)o.win=c.win;return o;}
 function isSummer(m){return m>=4&&m<=10;}
 function iv(p,m){var c=cfgOf(p);return isSummer(m)?c.sum:c.win;}
@@ -587,7 +605,7 @@ function tilesCard(){
     else {label='بدون ماء اليوم';sub='القادمة بعد '+daysAr(nd);}
     return '<button class="tile '+s.st+'" style="--tc:var(--c-'+p+')" data-act="water" data-p="'+p+'" aria-label="'+PN[p]+': '+label+'"><span class="tb">'+(s.st==='done'?ico('task'):DROP)+'</span><b>'+PN[p]+'</b><span class="tl">'+label+'</span><small>'+sub+'</small></button>';
   }).join('')+'</div>';
-  return '<section class="today"><div class="th"><h3>سقي اليوم</h3><span>'+(due?(due+' من 4 تحتاج سقياً'):'كل الأشجار مرتوية')+'</span></div>'+t+'<p class="note" style="margin:8px 4px 0">اضغط على الشجرة بعد أن تسقيها لتسجيل السقية، واضغط مرة ثانية للتراجع.</p></section>';
+  return '<section class="today"><div class="th"><h3>سقي اليوم</h3><span>'+(due?(due+' من '+PL.length+' تحتاج سقياً'):'كل الأشجار مرتوية')+'</span></div>'+t+'<p class="note" style="margin:8px 4px 0">اضغط على الشجرة بعد أن تسقيها لتسجيل السقية، واضغط مرة ثانية للتراجع.</p></section>';
 }
 function stripCard(){
   var days=weekDays(), sched={};
@@ -612,7 +630,7 @@ function waterRow(p){
   if(s.st==='due') sub=s.last?('آخر سقية قبل '+daysAr(Math.round((TODAY-s.last)/DAY))):'لم تُسجَّل سقية بعد';
   else sub='السقية القادمة: '+F_SHORT.format(s.next)+' (بعد '+daysAr(Math.round((s.next-TODAY)/DAY))+')';
   var h='<div class="row"><div class="nm"><b>'+dotP(p)+ivText(p,m)+'</b><small>'+restText(p,m)+'</small><small>'+sub+'</small></div></div>';
-  h+='<div class="meta">'+(p==='palm'&&!ov.sum&&!ov.win?tag(1):'<span class="tag">'+(p==='palm'?'معدّل':'افتراضي، عدّله حسب تجربتك')+'</span>')+
+  h+='<div class="meta">'+(p==='palm'&&!ov.sum&&!ov.win?tag(1):'<span class="tag">'+(p==='palm'?'معدّل':isCustom(p)?'من إعدادك':'افتراضي، عدّله حسب تجربتك')+'</span>')+
     '<button class="btn ghost" data-act="edit" data-p="'+p+'">'+(open?'إغلاق':'تعديل الفترة')+'</button></div>';
   if(open){
     h+='<div class="edit">'+stepper(p,'sum','صيفاً (أبريل–أكتوبر)',c.sum)+stepper(p,'win','شتاءً (نوفمبر–مارس)',c.win)+
@@ -620,7 +638,15 @@ function waterRow(p){
   }
   return h;
 }
+function customDetail(p){
+  var c=custom(p), ask=state.open.del===p;
+  var out=card('water','ري '+PN[p],waterRow(p)+'<p class="note">فترات الري من إعدادك. تحقق من رطوبة التربة باللمس قبل السقي.</p>');
+  out+=card('task','ملاحظاتك عن '+PN[p],'<textarea class="q" id="c-note" rows="3" placeholder="مثلاً: متى سمّدتها، متى رششتها، ما لاحظته عليها">'+esc(c.note||'')+'</textarea><p class="note">تتحفظ تلقائياً. لا توجد توصيات تسميد أو أمراض جاهزة للنباتات المضافة، لكن تقدر تصوّرها من تاب «اعرف شجرتك» وتسأل عنها.</p>');
+  out+='<div class="pick" style="margin:2px 4px 0">'+(ask?'<button class="btn" style="color:var(--risk)" data-act="delgo" data-p="'+p+'">نعم، احذف '+PN[p]+'</button><button class="btn ghost" data-act="delask" data-p="'+p+'">تراجع</button>':'<button class="btn ghost" data-act="delask" data-p="'+p+'">حذف هذا النبات</button>')+'</div>';
+  return out;
+}
 function treeDetail(p){
+  if(isCustom(p)) return customDetail(p);
   var ms=weekMonths(), ref=(p==='palm')?waterRef(monthOf(TODAY)):'';
   var inner=waterRow(p);
   if(ref) inner+='<p class="note">احتياج النخلة المرجعي هذا الشهر: '+ref+'. قياسات مركز ICBA في دبي لمزرعة تجارية، وتتغير مع الصنف والتربة والعمر.</p>';
@@ -629,9 +655,23 @@ function treeDetail(p){
   var dis=byPlant(DIS,ms,function(x){return '<div class="it"><div class="ty"><b>'+x.n+'</b>'+tag(x.s)+'</div><p>'+x.d+'</p></div>';},p);
   return card('water','ري '+PN[p],inner)+card('task','أعمال '+PN[p]+' هذا الأسبوع',tasks)+card('risk','ما يُراقب على '+PN[p],dis,'الأمراض والآفات المتوقعة في هذه الفترة.');
 }
+function dstep(k,label,v){
+  return '<div class="stp"><span>'+label+': كل</span><div class="ctl"><button data-act="dstep" data-k="'+k+'" data-d="-1" aria-label="أنقص">−</button><output>'+v+'</output><button data-act="dstep" data-k="'+k+'" data-d="1" aria-label="زِد">+</button><span>أيام</span></div></div>';
+}
+function addCard(){
+  var d=state.draft;
+  var sw=SW.map(function(c){return '<button class="swb" data-act="dcolor" data-c="'+c+'" style="background:'+c+'" aria-pressed="'+(d.color===c)+'" aria-label="لون"></button>';}).join('');
+  return card('plant','إضافة نبات جديد',
+    '<input class="fld" id="d-name" type="text" maxlength="30" placeholder="اسم النبات، مثل: ليمون، رمان، عنب" value="'+esc(d.name)+'">'+
+    '<div class="sws">'+sw+'</div>'+
+    '<div class="edit">'+dstep('sum','صيفاً (أبريل–أكتوبر)',d.sum)+dstep('win','شتاءً (نوفمبر–مارس)',d.win)+'</div>'+
+    (d.err?'<p class="note" style="color:var(--risk)">'+esc(d.err)+'</p>':'')+
+    '<div class="pick"><button class="btn main" data-act="dsave">حفظ</button><button class="btn ghost" data-act="dcancel">إلغاء</button></div>'+
+    '<p class="note">فترات السقي من عندك وتقدر تعدّلها بعدين. النباتات المضافة تظهر في جدول الري وبلاطات اليوم.</p>');
+}
 function viewFarm(){
-  var chips='<div class="sel">'+PL.map(function(p){return '<button data-act="sel" data-p="'+p+'" aria-pressed="'+(state.sel===p)+'">'+dotP(p)+PN[p]+'</button>';}).join('')+'</div>';
-  return tilesCard()+stripCard()+recsCard()+chips+treeDetail(state.sel);
+  var chips='<div class="sel">'+PL.map(function(p){return '<button data-act="sel" data-p="'+p+'" aria-pressed="'+(state.sel===p)+'">'+dotP(p)+PN[p]+'</button>';}).join('')+(state.custom.length<MAXC?'<button class="add" data-act="addopen">+ إضافة</button>':'')+'</div>';
+  return tilesCard()+stripCard()+recsCard()+chips+(state.draft?addCard():treeDetail(state.sel));
 }
 
 /* ---------- care tab ---------- */
@@ -694,15 +734,19 @@ function viewPlant(){
 }
 
 /* ---------- info + photo tab ---------- */
-var photo={ok:null,busy:false,url:null,res:null,err:'',note:'',ctl:null};
+var photo={ok:null,busy:false,url:null,res:null,err:'',note:'',ctl:null,mode:'',claudeOk:false,keyErr:''};
+var apiKey=store.get('bm_key','');
+if(typeof apiKey!=='string') apiKey='';
+var HAS_CLAUDE=!!(window.claude&&window.claude.use);
+function refreshOk(){photo.mode=(sampleFn&&photo.claudeOk)?'claude':(apiKey?'api':''); photo.ok=!!photo.mode;}
 var sampleFn=null;
 function initSample(){
-  if(!(window.claude&&window.claude.use)){photo.ok=false;return;}
+  if(!HAS_CLAUDE){refreshOk(); return;}
   window.claude.use('sample').then(function(s){
-    if(!s){photo.ok=false;return;}
+    if(!s){return;}
     sampleFn=s;
-    return s.limits().then(function(l){photo.ok=!!l.images;}).catch(function(){photo.ok=false;});
-  }).catch(function(){photo.ok=false;}).then(function(){if(state.tab==='info') render();});
+    return s.limits().then(function(l){photo.claudeOk=!!l.images;}).catch(function(){});
+  }).catch(function(){}).then(function(){refreshOk(); if(state.tab==='info') render();});
 }
 function buildPrompt(note){
   return 'أنت خبير زراعة يعمل في دولة الإمارات، منطقة أبوظبي (مصفح): تربة رملية قلوية، حرارة عالية صيفاً، ورطوبة في الخريف.\n'+
@@ -721,17 +765,55 @@ function errCopy(code){
     invalid_json:'ما قدرت أحلل الصورة بشكل مفهوم. جرّب صورة أقرب وأوضح.',
     empty_completion:'ما قدرت أحلل الصورة بشكل مفهوم. جرّب صورة أقرب وأوضح.',
     refused:'ما قدرت أحلل هذه الصورة. جرّب صورة أخرى.',
-    session_expired:'انتهت الجلسة. سجّل الدخول من جديد.'};
+    session_expired:'انتهت الجلسة. سجّل الدخول من جديد.',
+    bad_key:'مفتاح API غير صحيح أو منتهي. احذفه وأدخل مفتاحاً جديداً.',
+    no_credit:'رصيد حساب Anthropic API غير كافٍ. اشحن الرصيد من console.anthropic.com.',
+    network:'تعذّر الاتصال بالإنترنت. تأكد من الشبكة وجرّب مرة ثانية.'};
   return m[code]||'تعذّر الفحص الآن، جرّب مرة ثانية.';
 }
+function toB64(file){
+  return new Promise(function(ok,no){
+    var url=URL.createObjectURL(file), im=new Image();
+    im.onload=function(){
+      var mx=1568, k=Math.min(1,mx/Math.max(im.naturalWidth,im.naturalHeight));
+      var c=document.createElement('canvas'); c.width=Math.max(1,Math.round(im.naturalWidth*k)); c.height=Math.max(1,Math.round(im.naturalHeight*k));
+      c.getContext('2d').drawImage(im,0,0,c.width,c.height); URL.revokeObjectURL(url);
+      ok(c.toDataURL('image/jpeg',0.85).split(',')[1]);
+    };
+    im.onerror=function(){URL.revokeObjectURL(url); no(new Error('img'));};
+    im.src=url;
+  });
+}
+async function apiAnalyze(file,note,signal){
+  var b64; try{b64=await toB64(file);}catch(e){throw {code:'image_rejected'};}
+  var resp;
+  try{
+    resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',signal:signal,
+      headers:{'content-type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-5-5',max_tokens:2000,messages:[{role:'user',content:[
+        {type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},{type:'text',text:buildPrompt(note)}]}]})});
+  }catch(e){ if(e&&e.name==='AbortError') throw {code:'cancelled'}; throw {code:'network'}; }
+  if(!resp.ok){
+    var msg=''; try{var eb=await resp.json(); msg=(eb&&eb.error&&eb.error.message)||'';}catch(e){}
+    if(resp.status===401||resp.status===403) throw {code:'bad_key'};
+    if(resp.status===429) throw {code:'rate_limited'};
+    if(/credit/i.test(msg)) throw {code:'no_credit'};
+    if(resp.status===400) throw {code:'image_rejected'};
+    throw {code:'api'};
+  }
+  var j=await resp.json();
+  var t=(j.content||[]).filter(function(x){return x.type==='text';}).map(function(x){return x.text;}).join('');
+  var m=t.match(/\{[\s\S]*\}/); if(!m) throw {code:'invalid_json'};
+  try{return JSON.parse(m[0]);}catch(e){throw {code:'invalid_json'};}
+}
 async function analyze(file){
-  if(!sampleFn) return;
+  if(!photo.mode) return;
   var nEl=document.getElementById('note'); if(nEl) photo.note=nEl.value||'';
   if(photo.url){try{URL.revokeObjectURL(photo.url);}catch(e){}}
   photo.url=URL.createObjectURL(file); photo.busy=true; photo.res=null; photo.err='';
   photo.ctl=new AbortController(); render();
   try{
-    photo.res=await sampleFn.json(buildPrompt(photo.note.trim()),{images:file,signal:photo.ctl.signal,modelTier:'default'});
+    photo.res=photo.mode==='claude'?await sampleFn.json(buildPrompt(photo.note.trim()),{images:file,signal:photo.ctl.signal,modelTier:'default'}):await apiAnalyze(file,photo.note.trim(),photo.ctl.signal);
   }catch(e){
     photo.err=(e&&e.code==='cancelled')?'':errCopy(e&&e.code);
   }
@@ -759,7 +841,12 @@ function resultHtml(r){
 function photoCard(){
   var inner='';
   if(photo.ok===null) inner='<p class="empty"><span class="spin"></span>جارٍ التحضير…</p>';
-  else if(!photo.ok) inner='<p class="empty">فحص الصور (التعرف على الشجرة وصحتها) غير متاح في نسخة التطبيق المستقل، وهو يعمل فقط في نسخة Claude. باقي التابات تعمل كاملة بدون إنترنت.</p>';
+  else if(!photo.ok&&!HAS_CLAUDE) inner='<p>لتفعيل فحص الصور في هذه النسخة أدخل مفتاح Anthropic API الخاص بك مرة واحدة.</p>'+
+    '<input class="fld" id="k-in" type="password" dir="ltr" autocomplete="off" placeholder="sk-ant-...">'+
+    (photo.keyErr?'<p class="note" style="color:var(--risk);margin:0 0 8px">'+esc(photo.keyErr)+'</p>':'')+
+    '<div class="pick"><button class="btn main" data-act="keysave">حفظ المفتاح</button></div>'+
+    '<p class="note">المفتاح يُحفظ في متصفح هذا الجهاز فقط، ويُرسل إلى Anthropic مباشرة عند كل فحص، وكل فحص يُحسب على حسابك. تحصل عليه من console.anthropic.com. لا تشاركه مع أحد.</p>';
+  else if(!photo.ok) inner='<p class="empty">فحص الصور غير متاح في هذا العرض. افتح الصفحة من تطبيق Claude أو من claude.ai.</p>';
   else {
     if(photo.url) inner+='<img class="prev" src="'+photo.url+'" alt="الصورة المرفوعة">';
     if(photo.busy) inner+='<p><span class="spin"></span>جارٍ فحص الصورة… قد يستغرق دقيقة</p><button class="btn" data-act="stop">إيقاف</button>';
@@ -769,14 +856,14 @@ function photoCard(){
       inner+='<textarea class="q" id="note" rows="1" placeholder="ماذا تلاحظ؟ مثال: الأوراق تصفر من أسبوعين (اختياري)">'+esc(photo.note)+'</textarea>'+
         '<div class="pick"><label class="btn main" for="f-cam">'+ico('cam')+(photo.res||photo.url?'صورة جديدة':'التقط صورة')+'</label>'+
         '<label class="btn" for="f-gal">'+ico('img')+'من المعرض</label>'+
-        '<input type="file" id="f-cam" accept="image/*" capture="environment"><input type="file" id="f-gal" accept="image/*"></div>';
+        '<input type="file" id="f-cam" accept="image/*" capture="environment"><input type="file" id="f-gal" accept="image/*"></div>'+(photo.mode==='api'?'<p class="note" style="margin:10px 0 0">الفحص عبر مفتاحك الخاص. <button class="btn ghost" data-act="keydel" style="padding:2px 10px">حذف المفتاح</button></p>':'');
     }
   }
   return card('cam','اعرف شجرتك بالصورة',inner,'صوّر الشجرة أو الورقة أو الثمرة، أو أضف صورة من المعرض، وأعطيك النوع والحالة الصحية ومعلومات عنها.');
 }
 function viewInfo(){
   var out=photoCard();
-  out+=PL.map(function(p){
+  out+=PL.filter(function(p){return INFO[p];}).map(function(p){
     return card('tree',PN[p],INFO[p].map(function(x){return '<div class="it"><p>'+x[0]+'</p><div>'+tag(x[1])+'</div></div>';}).join(''));
   }).join('');
   return out;
@@ -829,13 +916,46 @@ document.addEventListener('click',function(e){
   else if(a==='reset'){delete state.cfg[p]; store.set('bm_cfg',state.cfg);}
   else if(a==='age'){state.age=Math.min(60,Math.max(1,state.age+d)); store.set('bm_age',state.age);}
   else if(a==='stop'){if(photo.ctl) photo.ctl.abort(); return;}
+  else if(a==='addopen'){state.draft={name:'',color:SW[state.custom.length%SW.length],sum:4,win:7,err:''};}
+  else if(a==='dcancel'){state.draft=null;}
+  else if(a==='dcolor'){state.draft.color=el.getAttribute('data-c');}
+  else if(a==='dstep'){var dk=el.getAttribute('data-k'); state.draft[dk]=Math.min(30,Math.max(1,state.draft[dk]+d));}
+  else if(a==='dsave'){
+    var nm=(state.draft.name||'').trim();
+    var dup=PL.some(function(q){return PN[q]===esc(nm);});
+    if(!nm) state.draft.err='اكتب اسم النبات أولاً.';
+    else if(dup) state.draft.err='يوجد نبات بهذا الاسم.';
+    else{
+      var id='u'+Date.now().toString(36);
+      state.custom.push({id:id,name:nm,color:state.draft.color,sum:state.draft.sum,win:state.draft.win,note:''});
+      store.set('bm_custom',state.custom); syncPlants(); state.sel=id; state.draft=null;
+    }
+  }
+  else if(a==='delask'){state.open.del=(state.open.del===p?null:p);}
+  else if(a==='delgo'){
+    state.custom=state.custom.filter(function(c){return c.id!==p;});
+    delete state.log[p]; delete state.cfg[p]; state.open.del=null;
+    store.set('bm_custom',state.custom); store.set('bm_log',state.log); store.set('bm_cfg',state.cfg);
+    syncPlants(); state.sel='palm';
+  }
+  else if(a==='keysave'){
+    var kv=(document.getElementById('k-in')||{}).value||''; kv=kv.trim();
+    if(kv.indexOf('sk-ant-')!==0||kv.length<30){photo.keyErr='المفتاح غير صحيح. يبدأ عادة بـ sk-ant-';}
+    else{apiKey=kv; store.set('bm_key',kv); photo.keyErr=''; refreshOk();}
+  }
+  else if(a==='keydel'){apiKey=''; store.set('bm_key',''); photo.res=null; photo.err=''; refreshOk();}
   render();
 });
 document.addEventListener('change',function(e){
   var t=e.target; if(!t||(t.id!=='f-cam'&&t.id!=='f-gal')) return;
-  var f=t.files&&t.files[0]; if(f) analyze(f);
+  var f=t.files&&t.files[0]; if(f) analyze(f); try{t.value='';}catch(err){}
 });
-document.addEventListener('input',function(e){if(e.target&&e.target.id==='note') photo.note=e.target.value;});
+document.addEventListener('input',function(e){
+  var t=e.target; if(!t) return;
+  if(t.id==='note') photo.note=t.value;
+  else if(t.id==='d-name'&&state.draft) state.draft.name=t.value;
+  else if(t.id==='c-note'){var c=custom(state.sel); if(c){c.note=t.value; store.set('bm_custom',state.custom);}}
+});
 setInterval(function(){var t=todayMs(); if(t!==TODAY){TODAY=t; render();} else clock();},30000);
 render();
 initSample();
